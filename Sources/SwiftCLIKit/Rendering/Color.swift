@@ -39,6 +39,9 @@ public enum ColorCapability: Int, Sendable, Comparable {
 /// let exact = Color.truecolor(r: 100, g: 149, b: 237)
 /// ```
 public enum Color: Sendable, Equatable, Hashable {
+    /// The terminal's default foreground/background color (no explicit color set).
+    public static let `default` = Color.ansi8(.white)  // placeholder — uses terminal default
+
     /// One of the 8/16 standard ANSI colors.
     case ansi8(ANSIColor)
     /// A color from the 256-color palette (0-255).
