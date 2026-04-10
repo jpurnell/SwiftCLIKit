@@ -1,0 +1,86 @@
+// HexColor.swift
+// SwiftCLIKit
+// Created by Justin Purnell on 2026-04-10.
+
+import Foundation
+
+/// Converts CSS-style hex color strings (e.g. `"#FF8800"`) to the nearest ANSI 8-color value.
+public enum HexColor: Sendable {
+
+    // MARK: - Hex to ANSI-8
+
+    /// Maps a 6-digit hex color string to the closest ``ANSIColor`` using HSV hue buckets.
+    /// - Parameter hex: A hex string like `"FF8800"` or `"#FF8800"`.
+    /// - Returns: The nearest ANSI color, or `nil` if the string is malformed.
+    public static func toANSI8(_ hex: String) -> ANSIColor? {
+        var cleaned = hex
+        if cleaned.hasPrefix("#") {
+            cleaned = String(cleaned.dropFirst())
+        }
+
+        guard cleaned.count == 6 else { return nil }
+        guard let value = UInt32(cleaned, radix: 16) else { return nil }
+
+        let r = Double((value >> 16) & 0xFF)
+        let g = Double((value >> 8) & 0xFF)
+        let b = Double(value & 0xFF)
+
+        let maxC = max(r, g, b)
+        let minC = min(r, g, b)
+        let delta = maxC - minC
+        let brightness = maxC / 255.0
+        let saturation = maxC > 0 ? delta / maxC : 0
+
+        // Achromatic: low saturation → black or white based on brightness
+        guard saturation > 0.15 else {
+            return brightness > 0.5 ? .white : .black
+        }
+
+        // Compute hue in degrees (0-360)
+        let hue: Double
+        if delta == 0 {
+            hue = 0
+        } else if maxC == r {
+            hue = 60.0 * (((g - b) / delta).truncatingRemainder(dividingBy: 6))
+        } else if maxC == g {
+            hue = 60.0 * (((b - r) / delta) + 2)
+        } else {
+            hue = 60.0 * (((r - g) / delta) + 4)
+        }
+        let normalizedHue = hue < 0 ? hue + 360 : hue
+
+        // Map hue ranges to ANSI colors
+        // Red:     330-360, 0-15
+        // Yellow:  15-75
+        // Green:   75-165
+        // Cyan:    165-195
+        // Blue:    195-285
+        // Magenta: 285-330
+        switch normalizedHue {
+        case 0..<15, 330..<360:
+            return .red
+        case 15..<75:
+            return .yellow
+        case 75..<165:
+            return .green
+        case 165..<195:
+            return .cyan
+        case 195..<285:
+            return .blue
+        case 285..<330:
+            return .magenta
+        default:
+            return .red
+        }
+    }
+
+    // MARK: - Hex to ANSI escape string
+
+    /// Converts a hex color string directly to an ANSI foreground escape sequence.
+    /// - Parameter hex: A hex string like `"FF8800"` or `"#FF8800"`.
+    /// - Returns: The ANSI foreground escape string, or an empty string if the hex is invalid.
+    public static func toANSIEscape(_ hex: String) -> String {
+        guard let color = toANSI8(hex) else { return "" }
+        return ANSICodes.fg(color)
+    }
+}
