@@ -68,4 +68,25 @@ public enum ANSICodes {
     public static let saveCursor = "\u{001B}[s"
     /// Restore a previously saved cursor position (DECRC via CSI u).
     public static let restoreCursor = "\u{001B}[u"
+
+    // MARK: - v0.2.0 additions
+
+    /// 256-color foreground (SGR 38;5;n).
+    public static func fg256(_ index: UInt8) -> String { "\u{001B}[38;5;\(index)m" }
+    /// 256-color background (SGR 48;5;n).
+    public static func bg256(_ index: UInt8) -> String { "\u{001B}[48;5;\(index)m" }
+    /// Truecolor foreground (SGR 38;2;r;g;b).
+    public static func fgRGB(_ r: UInt8, _ g: UInt8, _ b: UInt8) -> String { "\u{001B}[38;2;\(r);\(g);\(b)m" }
+    /// Truecolor background (SGR 48;2;r;g;b).
+    public static func bgRGB(_ r: UInt8, _ g: UInt8, _ b: UInt8) -> String { "\u{001B}[48;2;\(r);\(g);\(b)m" }
+    /// Strikethrough text (SGR 9).
+    public static let strikethrough = "\u{001B}[9m"
+    /// Overline text (SGR 53).
+    public static let overline = "\u{001B}[53m"
+    /// Curly underline (SGR 4:3).
+    public static let underlineCurly = "\u{001B}[4:3m"
+    /// Double underline (SGR 21).
+    public static let underlineDouble = "\u{001B}[21m"
+    /// Dotted underline (SGR 4:4).
+    public static let underlineDotted = "\u{001B}[4:4m"
 }
