@@ -32,6 +32,18 @@ public enum Key: Sendable, Equatable {
     /// Common Ctrl combinations used in line editing and signal handling.
     case ctrlC, ctrlD, ctrlA, ctrlE, ctrlK, ctrlW, ctrlU, ctrlL
 
+    // MARK: - v0.2.0 additions
+    /// A mouse event decoded from SGR protocol bytes.
+    case mouse(MouseEvent)
+    /// A function key (F1-F12).
+    case functionKey(Int)
+    /// Page Up (CSI 5~).
+    case pageUp
+    /// Page Down (CSI 6~).
+    case pageDown
+    /// Insert (CSI 2~).
+    case insert
+
     // MARK: - Fallback
     /// An unrecognised byte value.
     case unknown(UInt8)

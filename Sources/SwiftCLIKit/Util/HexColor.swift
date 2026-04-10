@@ -74,6 +74,25 @@ public enum HexColor: Sendable {
         }
     }
 
+    // MARK: - v0.2.0 additions
+
+    /// Converts a hex color string to a ``Color`` value.
+    /// - Parameter hex: A hex string like `"FF8800"` or `"#FF8800"`.
+    /// - Returns: A ``Color``, or `nil` if the string is malformed.
+    public static func toColor(_ hex: String) -> Color? {
+        Color.fromHex(hex)
+    }
+
+    /// Converts a hex color string to an ANSI escape sequence at the given capability.
+    /// - Parameters:
+    ///   - hex: A hex string like `"FF8800"` or `"#FF8800"`.
+    ///   - capability: The terminal's color capability.
+    /// - Returns: An escape string, or empty if invalid.
+    public static func toEscape(_ hex: String, capability: ColorCapability) -> String {
+        guard let color = Color.fromHex(hex) else { return "" }
+        return ColorNegotiation.fgEscape(color, capability: capability)
+    }
+
     // MARK: - Hex to ANSI escape string
 
     /// Converts a hex color string directly to an ANSI foreground escape sequence.
