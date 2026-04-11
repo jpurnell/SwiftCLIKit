@@ -81,4 +81,15 @@ struct ComponentTests {
         // Update returns [], so mapped result should also be []
         #expect(cmds.isEmpty == true)
     }
+
+    @Test("Send returns empty commands array while still updating model")
+    func sendReturnsEmptyForNoCommands() {
+        var counter = makeCounter()
+        #expect(counter.model.count == 0)
+        let cmds = counter.send(.increment)
+        // Model was updated
+        #expect(counter.model.count == 1)
+        // No commands returned
+        #expect(cmds.isEmpty == true)
+    }
 }

@@ -149,4 +149,13 @@ struct KeyReaderTests {
         let result = reader.readKey()
         #expect(result != nil)
     }
+
+    @Test("Bare escape on pipe EOF returns .escape, not hang")
+    func malformedEscapeSequence() {
+        // Write just ESC (0x1B) with no following bytes, then close the pipe.
+        // The reader should return .escape when the next readByte returns nil (EOF).
+        let reader = readerFromBytes([0x1B])
+        let result = reader.readKey()
+        #expect(result == .escape)
+    }
 }

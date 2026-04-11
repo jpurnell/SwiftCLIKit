@@ -43,16 +43,26 @@ public struct FocusManager: Sendable {
     }
 
     /// Advances focus to the next element, wrapping around to the first.
+    ///
+    /// If focus is currently blurred, re-enters the ring at the first element.
     public mutating func focusNext() {
         guard !focusOrder.isEmpty else { return }
-        guard let current = focusIndex else { return }
+        guard let current = focusIndex else {
+            focusIndex = 0
+            return
+        }
         focusIndex = (current + 1) % focusOrder.count
     }
 
     /// Moves focus to the previous element, wrapping around to the last.
+    ///
+    /// If focus is currently blurred, re-enters the ring at the last element.
     public mutating func focusPrevious() {
         guard !focusOrder.isEmpty else { return }
-        guard let current = focusIndex else { return }
+        guard let current = focusIndex else {
+            focusIndex = focusOrder.count - 1
+            return
+        }
         focusIndex = (current - 1 + focusOrder.count) % focusOrder.count
     }
 

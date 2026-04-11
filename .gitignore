@@ -5,3 +5,7 @@ xcuserdata/
 DerivedData/
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
+
+# Claude Code local settings (personal preferences, not shared)
+.claude/settings.local.json
+CLAUDE.local.md

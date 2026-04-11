@@ -30,4 +30,11 @@ struct SubscriptionTests {
             #expect(Bool(false), "Expected .none kind")
         }
     }
+
+    @Test("Two timer subscriptions with the same key collide by key equality")
+    func duplicateKeys() {
+        let sub1 = Subscription<Int>.timer(key: "tick", every: .seconds(1), message: { 0 })
+        let sub2 = Subscription<Int>.timer(key: "tick", every: .seconds(5), message: { 1 })
+        #expect(sub1.key == sub2.key)
+    }
 }

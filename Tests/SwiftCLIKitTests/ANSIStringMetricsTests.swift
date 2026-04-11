@@ -77,4 +77,21 @@ struct ANSIStringMetricsTests {
     func emptyString() {
         #expect(ANSIStringMetrics.visibleLength("") == 0)
     }
+
+    @Test("Truncate mid-ANSI sequence appends reset to prevent style bleeding")
+    func truncateMidANSISequence() {
+        let colored = "\u{001B}[31mhello\u{001B}[0m"
+        let truncated = ANSIStringMetrics.truncateVisible(colored, to: 2)
+        // Should contain only 2 visible chars and end with a reset sequence
+        #expect(ANSIStringMetrics.visibleLength(truncated) <= 2)
+        #expect(truncated.contains("\u{001B}[0m"))
+    }
+
+    @Test("Truncate preserves complete ANSI when width exceeds visible length")
+    func truncatePreservesCompleteANSI() {
+        let colored = "\u{001B}[31mhi\u{001B}[0m"
+        let truncated = ANSIStringMetrics.truncateVisible(colored, to: 5)
+        // Visible length is 2, which fits within 5, so the string should be unchanged
+        #expect(truncated == colored)
+    }
 }

@@ -86,7 +86,7 @@ public final class RawTerminal: @unchecked Sendable {
     /// Whether raw terminal mode was successfully activated.
     public var isRawMode: Bool {
         #if canImport(Darwin) || canImport(Glibc)
-        return true
+        return rawModeActive
         #else
         return false
         #endif

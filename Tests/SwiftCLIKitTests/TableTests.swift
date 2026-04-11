@@ -96,6 +96,27 @@ struct TableTests {
         #expect(visibleString.contains("Row 3"))
     }
 
+    @Test("Column widths exceeding frame width renders without crashing")
+    func columnWidthStarvation() {
+        // Total fixed = 150 but frame is only 40 wide
+        var frame = makeFrame(width: 40, height: 10)
+        let table = Table(
+            columns: [
+                Table.Column(header: "Alpha", width: .fixed(50)) { $0 },
+                Table.Column(header: "Beta", width: .fixed(50)) { $0 },
+                Table.Column(header: "Gamma", width: .fixed(50)) { $0 },
+            ],
+            rows: ["Row1", "Row2"]
+        )
+        // Should not crash even though columns overflow the frame
+        table.render(into: &frame)
+        let buf = frame.cellBuffer
+        // At minimum, some header text should be visible (even if truncated)
+        let headerRow = (0..<40).map { buf[$0, 0].character }
+        let headerString = String(headerRow)
+        #expect(headerString.contains("Alpha"), "First header should be at least partially visible")
+    }
+
     @Test("Sort indicator character appears in the header")
     func sortIndicator() {
         var frame = makeFrame(width: 30, height: 3)

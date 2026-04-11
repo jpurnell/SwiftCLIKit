@@ -110,4 +110,16 @@ struct KeyReaderV2Tests {
         let reader = readerFromBytes([0x1B, 0x5B, 0x41])
         #expect(reader.readKey() == .arrowUp)
     }
+
+    @Test("Kitty statics are non-empty and standard arrow-up still parses correctly")
+    func standardKeysWithKittyStatics() {
+        // Verify Kitty protocol statics are non-empty strings
+        #expect(!KeyReader.enableKittyProtocol.isEmpty)
+        #expect(!KeyReader.disableKittyProtocol.isEmpty)
+
+        // Verify that a standard arrow-up sequence still parses as .arrowUp
+        // (regression guard: the protocol statics don't alter the parser state)
+        let reader = readerFromBytes([0x1B, 0x5B, 0x41])
+        #expect(reader.readKey() == .arrowUp)
+    }
 }

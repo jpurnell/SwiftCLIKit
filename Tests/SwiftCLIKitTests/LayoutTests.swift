@@ -87,4 +87,24 @@ struct LayoutTests {
         #expect(chunks[0].width == 20)
         #expect(chunks[1].width == 0, "Second chunk should get zero when space is exhausted")
     }
+
+    @Test("Three fixed constraints totalling more than available space: third gets zero width")
+    func constraintOverflow() throws {
+        let area = Rect(x: 0, y: 0, width: 100, height: 1)
+        let chunks = Layout.split(
+            area: area,
+            direction: .horizontal,
+            constraints: [.fixed(50), .fixed(50), .fixed(50)]
+        )
+        try #require(chunks.count == 3)
+        // First two should fit (50 + 50 = 100)
+        #expect(chunks[0].width == 50)
+        #expect(chunks[1].width == 50)
+        // Third has no remaining space — should get 0, not negative or crash
+        #expect(chunks[2].width == 0)
+        // All widths must be non-negative
+        for chunk in chunks {
+            #expect(chunk.width >= 0, "No rect should have negative width")
+        }
+    }
 }

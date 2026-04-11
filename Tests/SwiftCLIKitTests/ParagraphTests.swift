@@ -93,4 +93,29 @@ struct ParagraphTests {
         let thirdLineHasContent = (0..<10).contains { buf[$0, 2].character != " " }
         #expect(thirdLineHasContent, "Text should span at least 3 lines")
     }
+
+    @Test("Forced line break via newline character is respected in wrap and no-wrap modes")
+    func forcedLineBreak() {
+        // Wrap mode: \n should force a line break
+        var wrapFrame = makeFrame(width: 40, height: 5)
+        let wrapPara = Paragraph(text: "line one\nline two", wrap: true)
+        wrapPara.render(into: &wrapFrame)
+        let wrapBuf = wrapFrame.cellBuffer
+        // Row 0 should contain "line"
+        let row0Wrap = (0..<40).map { wrapBuf[$0, 0].character }
+        #expect(String(row0Wrap).contains("line"), "Row 0 should contain text from first line")
+        // Row 1 should contain "line" (from "line two")
+        let row1Wrap = (0..<40).map { wrapBuf[$0, 1].character }
+        #expect(String(row1Wrap).contains("line"), "Row 1 should contain text from second line after \\n")
+
+        // No-wrap mode: \n should still be respected as a line break
+        var noWrapFrame = makeFrame(width: 40, height: 5)
+        let noWrapPara = Paragraph(text: "line one\nline two", wrap: false)
+        noWrapPara.render(into: &noWrapFrame)
+        let noWrapBuf = noWrapFrame.cellBuffer
+        let row0NoWrap = (0..<40).map { noWrapBuf[$0, 0].character }
+        #expect(String(row0NoWrap).contains("line"), "Row 0 should contain text (no-wrap mode)")
+        let row1NoWrap = (0..<40).map { noWrapBuf[$0, 1].character }
+        #expect(String(row1NoWrap).contains("line"), "Row 1 should contain text after \\n (no-wrap mode)")
+    }
 }

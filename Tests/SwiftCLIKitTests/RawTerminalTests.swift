@@ -33,11 +33,19 @@ struct RawTerminalTests {
         #expect(result == nil)
     }
 
-    @Test("isRawMode is true on Darwin after initialization")
-    func isRawModeFlag() {
+    @Test("isRawMode is false for a pipe (not a TTY)")
+    func isRawModeFalseForPipe() {
         let pipe = Pipe()
         let terminal = RawTerminal(fileDescriptor: pipe.fileHandleForReading.fileDescriptor)
 
-        #expect(terminal.isRawMode == true)
+        // Pipes are not terminals, so tcgetattr fails and raw mode is not activated
+        #expect(terminal.isRawMode == false)
+    }
+
+    @Test("Invalid file descriptor does not crash — readByte returns nil, isRawMode is false")
+    func crashResilience() {
+        let terminal = RawTerminal(fileDescriptor: 9999)
+        #expect(terminal.isRawMode == false)
+        #expect(terminal.readByte() == nil)
     }
 }

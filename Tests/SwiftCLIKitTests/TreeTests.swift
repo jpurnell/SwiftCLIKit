@@ -72,6 +72,36 @@ struct TreeTests {
         #expect(cell.fg == .ansi8(.green) || cell.attributes.contains(.reverse))
     }
 
+    @Test("Deep nesting (100 levels) does not crash or hang")
+    func deepNesting() {
+        // Build a 100-level deep chain: each node has one child
+        var expandedIDs = Set<String>()
+        var current = Tree<String>.TreeNode(value: "Leaf", children: [], id: "node_99")
+        expandedIDs.insert("node_99")
+        for i in stride(from: 98, through: 0, by: -1) {
+            let id = "node_\(i)"
+            current = Tree<String>.TreeNode(value: "Level \(i)", children: [current], id: id)
+            expandedIDs.insert(id)
+        }
+
+        var frame = makeFrame(width: 80, height: 10)
+        let tree = Tree(
+            roots: [current],
+            state: TreeState(expandedNodes: expandedIDs),
+            renderNode: { $0 }
+        )
+        // Should not crash or hang — only first 10 visible nodes appear
+        tree.render(into: &frame)
+        let buf = frame.cellBuffer
+        // Row 0 should contain "Level 0" (the root)
+        let row0 = (0..<80).map { buf[$0, 0].character }
+        #expect(String(row0).contains("Level 0"))
+        // Row 9 should have some content from the tree (level 9)
+        let row9 = (0..<80).map { buf[$0, 9].character }
+        let row9Str = String(row9).trimmingCharacters(in: .whitespaces)
+        #expect(!row9Str.isEmpty, "Row 9 should contain a visible node")
+    }
+
     @Test("Empty tree does not crash")
     func emptyTree() {
         var frame = makeFrame(width: 20, height: 3)

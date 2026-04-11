@@ -127,4 +127,22 @@ struct MouseEventTests {
         let b = MouseEvent(button: .right, column: 5, row: 10)
         #expect(a != b)
     }
+
+    @Test("Negative coordinates in SGR return nil (malformed)")
+    func outOfBoundsNegativeCoords() {
+        // "<0;-1;-1M" as bytes: '<' '0' ';' '-' '1' ';' '-' '1' 'M'
+        let bytes: [UInt8] = [0x3C, 0x30, 0x3B, 0x2D, 0x31, 0x3B, 0x2D, 0x31, 0x4D]
+        let event = MouseMode.parse(bytes)
+        #expect(event == nil)
+    }
+
+    @Test("Very large coordinates parse successfully without crashing")
+    func veryLargeCoords() {
+        // "<0;99999;99999M" as bytes
+        let bytes: [UInt8] = Array("<0;99999;99999M".utf8)
+        let event = MouseMode.parse(bytes)
+        #expect(event != nil)
+        #expect(event?.column == 99999)
+        #expect(event?.row == 99999)
+    }
 }

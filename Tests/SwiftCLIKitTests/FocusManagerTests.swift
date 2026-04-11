@@ -64,4 +64,29 @@ struct FocusManagerTests {
         fm.focusPrevious()
         #expect(fm.focused == nil)
     }
+
+    @Test("Focus skips removed element without crashing")
+    func focusSkipsRemoved() {
+        var fm = FocusManager(focusOrder: ["a", "b", "c"])
+        fm.focus("b")
+        #expect(fm.focused == "b")
+        // Shrink focusOrder so index 1 now points at "c", and index 2 is out of bounds
+        fm.focusOrder = ["a", "c"]
+        // focused should return a valid ID or nil (not crash)
+        let current = fm.focused
+        #expect(current == nil || fm.focusOrder.contains(current ?? ""))
+        // focusNext should not crash
+        fm.focusNext()
+        let afterNext = fm.focused
+        #expect(afterNext == nil || fm.focusOrder.contains(afterNext ?? ""))
+    }
+
+    @Test("After blur, focusNext re-enters ring from the start")
+    func emptyAfterBlur() {
+        var fm = FocusManager(focusOrder: ["a", "b"])
+        fm.blur()
+        #expect(fm.focused == nil)
+        fm.focusNext()
+        #expect(fm.focused == "a")
+    }
 }

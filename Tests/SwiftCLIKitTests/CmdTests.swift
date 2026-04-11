@@ -49,4 +49,25 @@ struct CmdTests {
             #expect(Bool(false), "Expected .task kind")
         }
     }
+
+    @Test("Cmd.batch with all .none elements constructs without crashing")
+    func batchWithNone() {
+        let cmd = Cmd<Int>.batch([.none, .none])
+        if case .batch(let cmds) = cmd.kind {
+            #expect(cmds.count == 2)
+        } else {
+            #expect(Bool(false), "Expected .batch kind")
+        }
+    }
+
+    @Test("Cmd.delay constructs without crashing")
+    func delayConstruction() {
+        let cmd = Cmd<Int>.delay(.seconds(1), then: 42)
+        if case .delay(let duration, let msg) = cmd.kind {
+            #expect(duration == .seconds(1))
+            #expect(msg == 42)
+        } else {
+            #expect(Bool(false), "Expected .delay kind")
+        }
+    }
 }

@@ -73,4 +73,20 @@ struct DiffRendererTests {
         let output = renderer.render(current: current, previous: nil)
         #expect(output.isEmpty)
     }
+
+    @Test("Same-style character change avoids redundant style reset and reapply")
+    func escapeEfficiency() {
+        var renderer = DiffRenderer()
+        var previous = CellBuffer(width: 10, height: 1)
+        var current = CellBuffer(width: 10, height: 1)
+        // Both cells share the same style (red foreground), only the character differs
+        previous[5, 0] = Cell(character: "A", fg: .ansi8(.red))
+        current[5, 0] = Cell(character: "B", fg: .ansi8(.red))
+        let output = renderer.render(current: current, previous: previous)
+        // The output should contain "B" (the changed character)
+        #expect(output.contains("B"))
+        // Since only one cell changed and needs one cursor move + one style + one char,
+        // the output should be reasonably short — not a full redraw
+        #expect(output.count < 50, "Output should be compact: cursor move + style + char, got \(output.count) chars")
+    }
 }

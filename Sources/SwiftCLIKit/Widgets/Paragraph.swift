@@ -51,78 +51,90 @@ public struct Paragraph: Sendable {
         let frameHeight = frame.rect.height
         guard frameWidth > 0, frameHeight > 0 else { return }
 
-        let words = text.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
-        guard !words.isEmpty else { return }
+        // Split on explicit newlines first, then process each segment
+        let explicitLines = text.split(separator: "\n", omittingEmptySubsequences: false)
+            .map(String.init)
 
         var lines: [String] = []
 
-        if wrap {
-            var currentLine = ""
-            var currentWidth = 0
+        for segment in explicitLines {
+            let words = segment.split(separator: " ", omittingEmptySubsequences: true)
+                .map(String.init)
 
-            for word in words {
-                let wordWidth = UnicodeWidth.displayWidth(word)
-                if currentLine.isEmpty {
-                    // First word on line -- always add it even if it exceeds width
-                    currentLine = word
-                    currentWidth = wordWidth
-                } else {
-                    let neededWidth = currentWidth + 1 + wordWidth
-                    if neededWidth <= frameWidth {
-                        currentLine += " " + word
-                        currentWidth = neededWidth
-                    } else {
-                        lines.append(currentLine)
+            if words.isEmpty {
+                // Empty segment from consecutive newlines — preserve as blank line
+                lines.append("")
+                continue
+            }
+
+            if wrap {
+                var currentLine = ""
+                var currentWidth = 0
+
+                for word in words {
+                    let wordWidth = UnicodeWidth.displayWidth(word)
+                    if currentLine.isEmpty {
+                        // First word on line -- always add it even if it exceeds width
                         currentLine = word
                         currentWidth = wordWidth
+                    } else {
+                        let neededWidth = currentWidth + 1 + wordWidth
+                        if neededWidth <= frameWidth {
+                            currentLine += " " + word
+                            currentWidth = neededWidth
+                        } else {
+                            lines.append(currentLine)
+                            currentLine = word
+                            currentWidth = wordWidth
+                        }
                     }
                 }
-            }
-            if !currentLine.isEmpty {
-                lines.append(currentLine)
-            }
-        } else {
-            // No wrap: single line, truncated to frame width
-            var currentLine = ""
-            var currentWidth = 0
+                if !currentLine.isEmpty {
+                    lines.append(currentLine)
+                }
+            } else {
+                // No wrap: single line per segment, truncated to frame width
+                var currentLine = ""
+                var currentWidth = 0
 
-            for word in words {
-                let wordWidth = UnicodeWidth.displayWidth(word)
-                if currentLine.isEmpty {
-                    if wordWidth <= frameWidth {
-                        currentLine = word
-                        currentWidth = wordWidth
-                    } else {
-                        // First word too long, truncate character-by-character
-                        for ch in word {
-                            let charWidth = UnicodeWidth.width(of: ch)
-                            if currentWidth + charWidth > frameWidth { break }
-                            currentLine.append(ch)
-                            currentWidth += charWidth
-                        }
-                        break
-                    }
-                } else {
-                    let neededWidth = currentWidth + 1 + wordWidth
-                    if neededWidth <= frameWidth {
-                        currentLine += " " + word
-                        currentWidth = neededWidth
-                    } else {
-                        // Word doesn't fit with space -- fill remaining space char by char
-                        let remaining = frameWidth - currentWidth
-                        if remaining > 0 {
+                for word in words {
+                    let wordWidth = UnicodeWidth.displayWidth(word)
+                    if currentLine.isEmpty {
+                        if wordWidth <= frameWidth {
+                            currentLine = word
+                            currentWidth = wordWidth
+                        } else {
+                            // First word too long, truncate character-by-character
                             for ch in word {
                                 let charWidth = UnicodeWidth.width(of: ch)
                                 if currentWidth + charWidth > frameWidth { break }
                                 currentLine.append(ch)
                                 currentWidth += charWidth
                             }
+                            break
                         }
-                        break
+                    } else {
+                        let neededWidth = currentWidth + 1 + wordWidth
+                        if neededWidth <= frameWidth {
+                            currentLine += " " + word
+                            currentWidth = neededWidth
+                        } else {
+                            // Word doesn't fit with space -- fill remaining space char by char
+                            let remaining = frameWidth - currentWidth
+                            if remaining > 0 {
+                                for ch in word {
+                                    let charWidth = UnicodeWidth.width(of: ch)
+                                    if currentWidth + charWidth > frameWidth { break }
+                                    currentLine.append(ch)
+                                    currentWidth += charWidth
+                                }
+                            }
+                            break
+                        }
                     }
                 }
+                lines.append(currentLine)
             }
-            lines.append(currentLine)
         }
 
         for (lineIndex, line) in lines.enumerated() {

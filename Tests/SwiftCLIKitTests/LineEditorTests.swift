@@ -119,6 +119,15 @@ struct LineEditorTests {
         #expect(result == .interrupt)
     }
 
+    @Test("Multi-byte character cursor movement treats emoji as one grapheme")
+    func multiByteCharCursorMovement() {
+        var editor = LineEditor()
+        // Type emoji, arrow left over it, insert X before it, then enter
+        let keys: [Key] = [.character("\u{1F600}"), .arrowLeft, .character("X"), .enter]
+        let result = feedKeys(&editor, keys)
+        #expect(result == .completed("X\u{1F600}"))
+    }
+
     @Test("Arrow keys respect boundaries: no overflow or underflow")
     func arrowBoundaries() {
         var editor = LineEditor()

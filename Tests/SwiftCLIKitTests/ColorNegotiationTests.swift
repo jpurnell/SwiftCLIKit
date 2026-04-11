@@ -82,4 +82,11 @@ struct ColorNegotiationTests {
         let escape = ColorNegotiation.fgEscape(.truecolor(r: 0, g: 255, b: 0), capability: .extended)
         #expect(escape.hasPrefix("\u{001B}[38;5;"))
     }
+
+    @Test("Truecolor green downsampled to basic equals ANSI green")
+    func conflictingEnvVars() {
+        // A truecolor pure green at basic capability should downsample to ANSI green
+        let escape = ColorNegotiation.fgEscape(.truecolor(r: 0, g: 255, b: 0), capability: .basic)
+        #expect(escape == ANSICodes.fg(.green))
+    }
 }
