@@ -69,7 +69,18 @@ public struct SyntaxHighlighter: Sendable {
         case .python: return PythonSyntaxTokenizer()
         case .json: return JSONSyntaxTokenizer()
         case .markdown: return MarkdownSyntaxTokenizer()
-        default: return GenericSyntaxTokenizer()
+        case .javascript: return JavaScriptSyntaxTokenizer()
+        case .typescript: return TypeScriptSyntaxTokenizer()
+        case .go: return GoSyntaxTokenizer()
+        case .rust: return RustSyntaxTokenizer()
+        case .ruby: return RubySyntaxTokenizer()
+        case .shell: return ShellSyntaxTokenizer()
+        case .yaml: return YAMLSyntaxTokenizer()
+        case .toml: return TOMLSyntaxTokenizer()
+        case .sql: return SQLSyntaxTokenizer()
+        case .html: return HTMLSyntaxTokenizer()
+        case .css: return CSSSyntaxTokenizer()
+        case .generic: return GenericSyntaxTokenizer()
         }
     }
 }
