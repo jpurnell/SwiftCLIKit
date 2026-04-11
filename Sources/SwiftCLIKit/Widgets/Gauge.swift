@@ -87,3 +87,16 @@ public struct Gauge: Sendable {
         }
     }
 }
+
+// MARK: - AccessibleWidget
+
+extension Gauge: AccessibleWidget {
+    public var accessibilityLabel: AccessibilityLabel {
+        let pct = Int(Swift.max(0, Swift.min(1, ratio)) * 100)
+        return AccessibilityLabel(
+            role: .gauge,
+            label: label ?? "Gauge",
+            value: "\(pct)%"
+        )
+    }
+}

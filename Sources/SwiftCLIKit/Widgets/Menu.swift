@@ -121,3 +121,18 @@ public struct Menu: Sendable {
         }
     }
 }
+
+// MARK: - AccessibleWidget
+
+extension Menu: AccessibleWidget {
+    public var accessibilityLabel: AccessibilityLabel {
+        let count = items.count
+        let selected = selectedIndex < count ? items[selectedIndex].label : ""
+        return AccessibilityLabel(
+            role: .menu,
+            label: "Menu with \(count) items, selected: \(selected)",
+            hint: "Enter to activate, arrow keys to navigate",
+            childCount: count
+        )
+    }
+}

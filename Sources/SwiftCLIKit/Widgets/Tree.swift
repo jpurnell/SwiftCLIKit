@@ -202,3 +202,21 @@ public struct TreeState: Sendable, Equatable {
         expandedNodes.removeAll()
     }
 }
+
+// MARK: - AccessibleWidget
+
+extension Tree: AccessibleWidget {
+    public var accessibilityLabel: AccessibilityLabel {
+        let rootCount = roots.count == 1 ? "1 root" : "\(roots.count) roots"
+        var label = "Tree with \(rootCount)"
+        if let sel = state.selectedNode { label += ", selected: \(sel)" }
+        let expanded = state.expandedNodes.count
+        label += ", \(expanded) expanded"
+        return AccessibilityLabel(
+            role: .tree,
+            label: label,
+            hint: "Enter to expand/collapse, arrow keys to navigate",
+            childCount: roots.count
+        )
+    }
+}

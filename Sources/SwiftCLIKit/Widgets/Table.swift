@@ -204,3 +204,21 @@ public struct TableState: Sendable, Equatable {
         }
     }
 }
+
+// MARK: - AccessibleWidget
+
+extension Table: AccessibleWidget {
+    public var accessibilityLabel: AccessibilityLabel {
+        let rowDesc = rows.count == 1 ? "1 row" : "\(rows.count) rows"
+        var label = "Table with \(rowDesc)"
+        if let sel = state.selectedRow {
+            label += ", currently on row \(sel + 1)"
+        }
+        return AccessibilityLabel(
+            role: .table,
+            label: label,
+            hint: "Use arrow keys to navigate rows",
+            childCount: rows.count
+        )
+    }
+}

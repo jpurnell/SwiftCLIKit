@@ -136,3 +136,22 @@ public struct ListState: Sendable, Equatable {
         }
     }
 }
+
+// MARK: - AccessibleWidget
+
+extension List: AccessibleWidget {
+    public var accessibilityLabel: AccessibilityLabel {
+        let count = items.count == 1 ? "1 item" : "\(items.count) items"
+        var label = "List with \(count)"
+        if let sel = state.selectedIndex {
+            let itemText = sel < items.count ? items[sel].text : ""
+            label += ", selected: \(itemText)"
+        }
+        return AccessibilityLabel(
+            role: .list,
+            label: label,
+            hint: "Use arrow keys to navigate",
+            childCount: items.count
+        )
+    }
+}

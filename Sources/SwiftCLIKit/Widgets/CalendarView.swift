@@ -119,3 +119,22 @@ public struct CalendarView: Sendable {
         }
     }
 }
+
+// MARK: - AccessibleWidget
+
+extension CalendarView: AccessibleWidget {
+    public var accessibilityLabel: AccessibilityLabel {
+        let monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December",
+        ]
+        let monthName = (month >= 1 && month <= 12) ? monthNames[month - 1] : "Unknown"
+        var label = "\(monthName) \(year)"
+        if let day = selectedDay { label += ", selected day \(day)" }
+        return AccessibilityLabel(
+            role: .calendar,
+            label: label,
+            hint: "Arrow keys to navigate days"
+        )
+    }
+}

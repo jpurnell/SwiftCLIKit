@@ -93,3 +93,17 @@ public struct Tabs: Sendable {
         }
     }
 }
+
+// MARK: - AccessibleWidget
+
+extension Tabs: AccessibleWidget {
+    public var accessibilityLabel: AccessibilityLabel {
+        let active = activeIndex < titles.count ? titles[activeIndex] : ""
+        return AccessibilityLabel(
+            role: .tab,
+            label: "Tabs: \(active) (\(activeIndex + 1) of \(titles.count))",
+            hint: "Left/Right to switch tabs",
+            childCount: titles.count
+        )
+    }
+}
