@@ -13,13 +13,18 @@ import Foundation
 /// let backend = TestBackend(width: 80, height: 24)
 /// await backend.inject(.key(.character("a")))
 /// ```
-public final class TestBackend: @unchecked Sendable {
+public final class TestBackend: TerminalBackend, @unchecked Sendable {
     // Justification: internal lock protects buffer and event queue mutations
     private let lock = NSLock()
     private var buffer: CellBuffer
     private var history: [CellBuffer] = []
     private var eventContinuation: AsyncStream<Event>.Continuation?
     private var _eventStream: AsyncStream<Event>
+    private var writtenOutput: [String] = []
+    private var _isRawMode: Bool = false
+    private var _isAlternateScreen: Bool = false
+    private var _isMouseEnabled: Bool = false
+    private var _isCursorHidden: Bool = false
 
     /// The width of the virtual terminal in columns.
     public let width: Int
@@ -103,5 +108,116 @@ public final class TestBackend: @unchecked Sendable {
         buffer = buf
         history.append(buf)
         lock.unlock()
+    }
+
+    // MARK: - TerminalBackend Conformance
+
+    /// Enters raw mode (no-op for test backend).
+    public func enableRawMode() throws {
+        lock.lock()
+        defer { lock.unlock() }
+        _isRawMode = true
+    }
+
+    /// Restores original terminal mode (no-op for test backend).
+    public func disableRawMode() {
+        lock.lock()
+        defer { lock.unlock() }
+        _isRawMode = false
+    }
+
+    /// Returns `nil` immediately (use ``inject(_:)`` for event-driven testing).
+    public func readKey() -> Key? { nil }
+
+    /// Returns the configured test terminal dimensions.
+    public func terminalSize() -> TerminalSize {
+        TerminalSize(columns: width, rows: height)
+    }
+
+    /// Records the string for later assertion via ``allWrittenOutput``.
+    /// - Parameter string: The text that would be written to a real terminal.
+    public func write(_ string: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        writtenOutput.append(string)
+    }
+
+    /// Marks the alternate screen as active (no-op for test backend).
+    public func enterAlternateScreen() {
+        lock.lock()
+        defer { lock.unlock() }
+        _isAlternateScreen = true
+    }
+
+    /// Marks the alternate screen as inactive (no-op for test backend).
+    public func leaveAlternateScreen() {
+        lock.lock()
+        defer { lock.unlock() }
+        _isAlternateScreen = false
+    }
+
+    /// Marks mouse tracking as enabled (no-op for test backend).
+    public func enableMouse() {
+        lock.lock()
+        defer { lock.unlock() }
+        _isMouseEnabled = true
+    }
+
+    /// Marks mouse tracking as disabled (no-op for test backend).
+    public func disableMouse() {
+        lock.lock()
+        defer { lock.unlock() }
+        _isMouseEnabled = false
+    }
+
+    /// Marks the cursor as hidden (no-op for test backend).
+    public func hideCursor() {
+        lock.lock()
+        defer { lock.unlock() }
+        _isCursorHidden = true
+    }
+
+    /// Marks the cursor as visible (no-op for test backend).
+    public func showCursor() {
+        lock.lock()
+        defer { lock.unlock() }
+        _isCursorHidden = false
+    }
+
+    // MARK: - Test Inspection
+
+    /// All strings that have been written through the ``write(_:)`` method.
+    public var allWrittenOutput: [String] {
+        lock.lock()
+        defer { lock.unlock() }
+        return writtenOutput
+    }
+
+    /// Whether raw mode is currently active.
+    public var isRawMode: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return _isRawMode
+    }
+
+    /// Whether the alternate screen buffer is active.
+    public var isAlternateScreen: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return _isAlternateScreen
+    }
+
+    /// Whether mouse tracking is enabled.
+    public var isMouseEnabled: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return _isMouseEnabled
+    }
+
+    /// Whether the cursor is hidden.
+    public var isCursorHidden: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return _isCursorHidden
     }
 }

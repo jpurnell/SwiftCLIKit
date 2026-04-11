@@ -1,0 +1,55 @@
+// SSHBackendTests.swift
+// SwiftCLIKitSSH
+// Created by Justin Purnell on 2026-04-10.
+
+import Testing
+import Foundation
+@testable import SwiftCLIKitSSH
+import SwiftCLIKit
+
+/// Thread-safe accumulator for captured output strings.
+private final class CapturedOutput: @unchecked Sendable {
+    // Justification: NSLock serializes all access to the values array
+    private let lock = NSLock()
+    private var _values: [String] = []
+
+    func append(_ string: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        _values.append(string)
+    }
+
+    var values: [String] {
+        lock.lock()
+        defer { lock.unlock() }
+        return _values
+    }
+}
+
+@Suite("SSHBackend")
+struct SSHBackendTests {
+
+    @Test("Write calls output handler with correct string")
+    func writeCallsOutputHandler() {
+        let captured = CapturedOutput()
+        let backend = SSHBackend(outputHandler: { captured.append($0) })
+        backend.write("Hello SSH")
+        #expect(captured.values == ["Hello SSH"])
+    }
+
+    @Test("UpdateSize changes terminalSize")
+    func updateSizeChangesTerminalSize() {
+        let noop: @Sendable (String) -> Void = { _ in }
+        let backend = SSHBackend(outputHandler: noop)
+        #expect(backend.terminalSize() == TerminalSize(columns: 80, rows: 24))
+        backend.updateSize(TerminalSize(columns: 120, rows: 40))
+        #expect(backend.terminalSize() == TerminalSize(columns: 120, rows: 40))
+    }
+
+    @Test("enableRawMode does not throw for SSH backend")
+    func enableRawModeNoOp() throws {
+        let noop: @Sendable (String) -> Void = { _ in }
+        let backend = SSHBackend(outputHandler: noop)
+        try backend.enableRawMode()
+    }
+}
