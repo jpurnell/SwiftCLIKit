@@ -39,8 +39,9 @@ public enum ColorCapability: Int, Sendable, Comparable {
 /// let exact = Color.truecolor(r: 100, g: 149, b: 237)
 /// ```
 public enum Color: Sendable, Equatable, Hashable {
-    /// The terminal's default foreground/background color (no explicit color set).
-    public static let `default` = Color.ansi8(.white)  // placeholder — uses terminal default
+    /// The terminal's default color — no explicit SGR code emitted.
+    /// Uses SGR 39 (default fg) or SGR 49 (default bg).
+    case defaultColor
 
     /// One of the 8/16 standard ANSI colors.
     case ansi8(ANSIColor)
@@ -48,6 +49,9 @@ public enum Color: Sendable, Equatable, Hashable {
     case ansi256(UInt8)
     /// A 24-bit RGB color.
     case truecolor(r: UInt8, g: UInt8, b: UInt8)
+
+    /// The terminal's default foreground/background color.
+    public static let `default`: Color = .defaultColor
 
     // MARK: - xterm-256 palette
 
@@ -137,6 +141,8 @@ public enum Color: Sendable, Equatable, Hashable {
 
         case .extended:
             switch self {
+            case .defaultColor:
+                return self
             case .truecolor(let r, let g, let b):
                 let index = Color.nearestXterm256(r: r, g: g, b: b)
                 return .ansi256(index)
@@ -146,6 +152,8 @@ public enum Color: Sendable, Equatable, Hashable {
 
         case .basic:
             switch self {
+            case .defaultColor:
+                return self
             case .truecolor(let r, let g, let b):
                 let hex = Color.rgbToHex(r: r, g: g, b: b)
                 guard let ansi = HexColor.toANSI8(hex) else {

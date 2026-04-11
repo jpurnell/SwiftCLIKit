@@ -89,6 +89,8 @@ public struct DiffRenderer: Sendable {
 
         // Foreground
         switch cell.fg {
+        case .defaultColor:
+            params.append("39")  // SGR 39 = default foreground
         case .ansi8(let c):
             if c.rawValue < 8 {
                 params.append("\(30 + c.rawValue)")
@@ -103,6 +105,8 @@ public struct DiffRenderer: Sendable {
 
         // Background
         switch cell.bg {
+        case .defaultColor:
+            params.append("49")  // SGR 49 = default background
         case .ansi8(let c):
             if c.rawValue < 8 {
                 params.append("\(40 + c.rawValue)")

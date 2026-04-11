@@ -26,6 +26,8 @@ extension Color: Codable {
             let g = try container.decode(UInt8.self, forKey: .g)
             let b = try container.decode(UInt8.self, forKey: .b)
             self = .truecolor(r: r, g: g, b: b)
+        case "default":
+            self = .defaultColor
         default:
             self = .ansi8(.white)
         }
@@ -34,6 +36,8 @@ extension Color: Codable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
+        case .defaultColor:
+            try container.encode("default", forKey: .type)
         case .ansi8(let color):
             try container.encode("ansi8", forKey: .type)
             try container.encode(color, forKey: .value)

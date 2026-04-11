@@ -55,6 +55,8 @@ public enum ColorNegotiation {
         let resolved = color.downsampled(to: capability)
 
         switch resolved {
+        case .defaultColor:
+            return "\u{001B}[39m"
         case .ansi8(let ansiColor):
             return ANSICodes.fg(ansiColor)
         case .ansi256(let index):
@@ -76,6 +78,8 @@ public enum ColorNegotiation {
         let resolved = color.downsampled(to: capability)
 
         switch resolved {
+        case .defaultColor:
+            return "\u{001B}[49m"
         case .ansi8(let ansiColor):
             return ANSICodes.bg(ansiColor)
         case .ansi256(let index):

@@ -157,6 +157,8 @@ public enum SnapshotTesting {
 
     private static func colorName(_ color: Color) -> String {
         switch color {
+        case .defaultColor:
+            return "default"
         case .ansi8(let ansi):
             return ansiColorName(ansi)
         case .ansi256(let n):
