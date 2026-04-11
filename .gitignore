@@ -9,3 +9,6 @@ DerivedData/
 # Claude Code local settings (personal preferences, not shared)
 .claude/settings.local.json
 CLAUDE.local.md
+
+# development-guidelines has its own git repo
+development-guidelines/
