@@ -78,6 +78,10 @@ public struct DiffRenderer: Sendable {
         // Only emit wrapper sequences if we actually wrote something
         guard !output.isEmpty else { return "" }
 
+        // Reset terminal attributes after rendering to prevent color bleed
+        // into unwritten areas (empty cells that were skipped)
+        output += "\u{001B}[0m"
+
         return output
     }
 
