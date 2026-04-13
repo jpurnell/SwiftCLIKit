@@ -43,6 +43,8 @@ public enum Key: Sendable, Equatable {
     case pageDown
     /// Insert (CSI 2~).
     case insert
+    /// Shift-Tab / Backtab (CSI Z).
+    case backtab
 
     // MARK: - Fallback
     /// An unrecognised byte value.

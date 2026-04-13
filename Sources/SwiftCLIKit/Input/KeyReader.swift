@@ -136,6 +136,8 @@ public struct KeyReader: Sendable {
             return .home
         case 0x46: // F
             return .end
+        case 0x5A: // Z (Shift-Tab / Backtab)
+            return .backtab
         case 0x7E: // ~
             return mapTildeSequence(params: params)
         default:
