@@ -22,7 +22,6 @@ struct EventStreamTests {
         let stream = streamFromBytes([0x1B, 0x5B, 0x41])  // arrow-up
         var iterator = stream.makeAsyncIterator()
         let event = await iterator.next()
-        #expect(event != nil)
         if case .key(let key) = event {
             #expect(key == .arrowUp)
         } else {

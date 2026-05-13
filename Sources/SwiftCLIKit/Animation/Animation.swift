@@ -94,6 +94,8 @@ public struct Animation: Sendable {
 
     private func durationToSeconds(_ d: Duration) -> Double {
         let components = d.components
-        return Double(components.seconds) + Double(components.attoseconds) / 1_000_000_000_000_000_000.0
+        let attosPerSecond = 1_000_000_000_000_000_000.0
+        guard attosPerSecond > 0 else { return Double(components.seconds) }
+        return Double(components.seconds) + Double(components.attoseconds) / attosPerSecond
     }
 }

@@ -208,6 +208,7 @@ public struct TableState: Sendable, Equatable {
 // MARK: - AccessibleWidget
 
 extension Table: AccessibleWidget {
+    /// An accessibility label describing the table, including row count and current selection.
     public var accessibilityLabel: AccessibilityLabel {
         let rowDesc = rows.count == 1 ? "1 row" : "\(rows.count) rows"
         var label = "Table with \(rowDesc)"

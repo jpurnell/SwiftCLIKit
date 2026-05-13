@@ -22,7 +22,7 @@ public struct Subscription<Message: Sendable>: Sendable {
     /// The internal representation of the subscription's intent.
     internal enum Kind: Sendable {
         /// No subscription (placeholder).
-        case none
+        case empty
         /// A repeating timer that fires at the given interval.
         case timer(Duration, @Sendable () -> Message)
         /// An async stream that yields messages until nil.
@@ -66,5 +66,5 @@ public struct Subscription<Message: Sendable>: Sendable {
     }
 
     /// A subscription that produces no events.
-    public static var none: Subscription { Subscription(key: "", kind: .none) }
+    public static var none: Subscription { Subscription(key: "", kind: Kind.empty) }
 }

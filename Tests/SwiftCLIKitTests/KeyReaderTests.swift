@@ -147,7 +147,7 @@ struct KeyReaderTests {
     func bareEscape() {
         let reader = readerFromBytes([0x1B])
         let result = reader.readKey()
-        #expect(result != nil)
+        #expect(result == .escape)
     }
 
     @Test("Bare escape on pipe EOF returns .escape, not hang")

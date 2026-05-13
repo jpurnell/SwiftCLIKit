@@ -1,4 +1,5 @@
 // swift-tools-version: 6.0
+// Pinned: remote deploy target (roseclub.org) runs Swift 6.0.3
 //
 //  Package.swift
 //  SwiftCLIKit
@@ -14,6 +15,7 @@ let package = Package(
     products: [
         .library(name: "SwiftCLIKit", targets: ["SwiftCLIKit"]),
         .library(name: "SwiftCLIKitSSH", targets: ["SwiftCLIKitSSH"]),
+        .executable(name: "swiftclikit-examples", targets: ["swiftclikit-examples"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-nio-ssh.git", from: "0.9.0"),
@@ -28,6 +30,11 @@ let package = Package(
                 "SwiftCLIKit",
                 .product(name: "NIOSSH", package: "swift-nio-ssh"),
             ]
+        ),
+        .executableTarget(
+            name: "swiftclikit-examples",
+            dependencies: ["SwiftCLIKit"],
+            path: "Sources/swiftclikit-examples"
         ),
         .testTarget(
             name: "SwiftCLIKitTests",

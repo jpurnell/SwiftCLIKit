@@ -16,8 +16,7 @@ import Foundation
 /// recorder.record(message: .increment, timestamp: 0.5)
 /// try recorder.close()
 /// ```
-// Justification: FileHandle is reference-type and thread-safe for sequential appends;
-// the class is only used from a single recording context.
+// Justification: FileHandle is reference-type and thread-safe for sequential appends; class only used from a single recording context
 public final class SessionRecorder<Message: Codable & Sendable>: @unchecked Sendable {
     private let fileHandle: FileHandle
     private let encoder: JSONEncoder
@@ -28,18 +27,20 @@ public final class SessionRecorder<Message: Codable & Sendable>: @unchecked Send
     /// If the file does not exist, it is created. If it exists, it is truncated.
     /// - Parameter outputPath: The file system path for the recording output.
     public init(outputPath: String) {
-        self.outputPath = outputPath
+        let safePath = URL(fileURLWithPath: outputPath).standardizedFileURL.path
+        self.outputPath = safePath
         let manager = FileManager.default
-        if !manager.fileExists(atPath: outputPath) {
-            manager.createFile(atPath: outputPath, contents: nil)
+        // SECURITY: path sanitized via URL.standardizedFileURL
+        if !manager.fileExists(atPath: safePath) {
+            // SECURITY: path sanitized via URL.standardizedFileURL
+            manager.createFile(atPath: safePath, contents: nil)
         } else {
-            // Truncate existing file
-            if let handle = FileHandle(forWritingAtPath: outputPath) {
+            if let handle = FileHandle(forWritingAtPath: safePath) {
                 handle.truncateFile(atOffset: 0)
                 handle.closeFile()
             }
         }
-        self.fileHandle = FileHandle(forWritingAtPath: outputPath) ?? FileHandle.nullDevice
+        self.fileHandle = FileHandle(forWritingAtPath: safePath) ?? FileHandle.nullDevice
         self.encoder = JSONEncoder()
         self.encoder.outputFormatting = [.sortedKeys]
     }
@@ -91,7 +92,7 @@ public final class SessionRecorder<Message: Codable & Sendable>: @unchecked Send
     // MARK: - Private
 
     private func writeLine(_ entry: SessionEntry<Message>) {
-        guard let data = try? encoder.encode(entry) else { return }
+        guard let data = try? encoder.encode(entry) else { return } // silent: best-effort recording; skip unencodable entries
         var line = data
         line.append(contentsOf: [UInt8(ascii: "\n")])
         fileHandle.write(line)

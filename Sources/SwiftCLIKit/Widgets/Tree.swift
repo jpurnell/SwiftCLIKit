@@ -127,6 +127,7 @@ public struct Tree<Node: Sendable>: Sendable {
     private func flattenedNodes() -> [(node: TreeNode, depth: Int)] {
         var result: [(TreeNode, Int)] = []
         func walk(_ nodes: [TreeNode], depth: Int) {
+            guard !nodes.isEmpty else { return }
             for node in nodes {
                 result.append((node, depth))
                 if state.expandedNodes.contains(node.id) {
@@ -206,6 +207,7 @@ public struct TreeState: Sendable, Equatable {
 // MARK: - AccessibleWidget
 
 extension Tree: AccessibleWidget {
+    /// An accessibility label describing the tree, including root count, selection, and expanded state.
     public var accessibilityLabel: AccessibilityLabel {
         let rootCount = roots.count == 1 ? "1 root" : "\(roots.count) roots"
         var label = "Tree with \(rootCount)"

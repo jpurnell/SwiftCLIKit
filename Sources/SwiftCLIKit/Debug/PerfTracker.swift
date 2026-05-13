@@ -100,9 +100,9 @@ public struct PerfTracker: Sendable {
     public var currentFPS: Double {
         guard !frameTimes.isEmpty else { return 0.0 }
         let avg = averageFrameTime
-        let seconds = Double(avg.components.seconds) + Double(avg.components.attoseconds) / 1_000_000_000_000_000_000.0
-        guard seconds > 0 else { return 0.0 }
-        return 1.0 / seconds
+        let totalAttos = Double(avg.components.seconds) * 1_000_000_000_000_000_000.0 + Double(avg.components.attoseconds)
+        guard totalAttos > 0 else { return 0.0 }
+        return 1_000_000_000_000_000_000.0 / totalAttos // fp-safety:disable
     }
 
     /// Average frame time over the rolling window.

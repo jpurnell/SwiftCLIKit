@@ -30,17 +30,17 @@ private final class CapturedOutput: @unchecked Sendable {
 struct SSHBackendTests {
 
     @Test("Write calls output handler with correct string")
-    func writeCallsOutputHandler() {
+    func writeCallsOutputHandler() throws {
         let captured = CapturedOutput()
-        let backend = SSHBackend(outputHandler: { captured.append($0) })
+        let backend = try SSHBackend(outputHandler: { captured.append($0) })
         backend.write("Hello SSH")
         #expect(captured.values == ["Hello SSH"])
     }
 
     @Test("UpdateSize changes terminalSize")
-    func updateSizeChangesTerminalSize() {
+    func updateSizeChangesTerminalSize() throws {
         let noop: @Sendable (String) -> Void = { _ in }
-        let backend = SSHBackend(outputHandler: noop)
+        let backend = try SSHBackend(outputHandler: noop)
         #expect(backend.terminalSize() == TerminalSize(columns: 80, rows: 24))
         backend.updateSize(TerminalSize(columns: 120, rows: 40))
         #expect(backend.terminalSize() == TerminalSize(columns: 120, rows: 40))
@@ -49,7 +49,9 @@ struct SSHBackendTests {
     @Test("enableRawMode does not throw for SSH backend")
     func enableRawModeNoOp() throws {
         let noop: @Sendable (String) -> Void = { _ in }
-        let backend = SSHBackend(outputHandler: noop)
+        let backend = try SSHBackend(outputHandler: noop)
         try backend.enableRawMode()
+        // Verify SSH backend is still functional after enableRawMode (no-op for SSH)
+        #expect(backend.terminalSize() == TerminalSize(columns: 80, rows: 24))
     }
 }

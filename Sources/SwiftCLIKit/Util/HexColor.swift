@@ -28,19 +28,25 @@ public enum HexColor: Sendable {
         let maxC = max(r, g, b)
         let minC = min(r, g, b)
         let delta = maxC - minC
-        let brightness = maxC / 255.0
-        let saturation = maxC > 0 ? delta / maxC : 0
+        let rgbScale = 255.0
+        guard rgbScale > 0 else { return nil }
+        let brightness = maxC / rgbScale
+        let saturation: Double
+        guard maxC > 0 else {
+            saturation = 0
+            return brightness > 0.5 ? .white : .black
+        }
+        saturation = delta / maxC
 
         // Achromatic: low saturation → black or white based on brightness
         guard saturation > 0.15 else {
             return brightness > 0.5 ? .white : .black
         }
 
-        // Compute hue in degrees (0-360)
+        // Compute hue in degrees (0-360); delta > 0 guaranteed by saturation > 0.15 guard above
+        guard delta > 0 else { return brightness > 0.5 ? .white : .black }
         let hue: Double
-        if delta == 0 {
-            hue = 0
-        } else if maxC == r {
+        if maxC == r {
             hue = 60.0 * (((g - b) / delta).truncatingRemainder(dividingBy: 6))
         } else if maxC == g {
             hue = 60.0 * (((b - r) / delta) + 2)

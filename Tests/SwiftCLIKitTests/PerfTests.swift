@@ -52,7 +52,7 @@ struct PerfTests {
     @Test("PerfTracker zero frames returns zero FPS")
     func zeroFramesZeroFPS() {
         let tracker = PerfTracker()
-        #expect(tracker.currentFPS == 0.0)
+        #expect(abs(tracker.currentFPS - 0.0) < 1e-6)
         #expect(tracker.averageFrameTime == .zero)
     }
 

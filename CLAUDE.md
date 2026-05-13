@@ -16,7 +16,7 @@ For quick recovery (same-day, simple bug fixes), read only items 4-5.
 ## Development Workflow
 
 ```
-0. DESIGN   → Propose architecture (05_DESIGN_PROPOSAL.md)
+0. DESIGN   → Propose architecture (02_IMPLEMENTATION_PLANS/PROPOSALS/)
 1. RED      → Write failing tests first
 2. GREEN    → Minimum code to pass
 3. REFACTOR → Clean up, keep tests green
@@ -48,7 +48,8 @@ SwiftCLIKit is a two-layer terminal abstraction library:
 - Cell/: Cell, CellAttributes, CellBuffer
 - Layout/: Rect, Layout, Frame
 - Rendering/: DiffRenderer
-- Widgets/: Table, List, Tree, Gauge, ProgressBar, Sparkline, BarChart, Tabs, Menu, Scrollbar, CalendarView, Block, Paragraph, CellStyle
+- Widgets/: Table, List, Tree, Gauge, ProgressBar, Sparkline, BarChart, Tabs, Menu, Scrollbar, CalendarView, Block, Paragraph, CellStyle, InlineGauge, InlineSparkline
+- Util/: Formatting (elapsed, duration, bytes, time, rate)
 - Framework/: App, Cmd, Subscription, EventStream, Event, FocusManager, Component
 
 ## Quality Gate

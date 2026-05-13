@@ -84,7 +84,8 @@ struct AccessibilityAnnouncerTests {
             channel: .stderr,
             settings: AccessibilitySettings(isEnabled: true)
         )
-        // Just verify no crash; stderr output can't be captured easily
+        // Verify no crash; stderr output can't be captured easily
         announcer.announce("stderr test")
+        #expect(true, "Announcing to stderr should complete without crashing")
     }
 }

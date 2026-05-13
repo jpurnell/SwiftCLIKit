@@ -23,29 +23,36 @@ import NIOSSH
 ///
 /// - Note: The ``readKey()`` method currently returns `nil` as a placeholder.
 ///   Full integration requires an async key reader, planned for a future release.
+// Justification: NSLock protects mutable size; NIO channel access serialized through event loop
 public final class SSHBackend: TerminalBackend, @unchecked Sendable {
-    // Justification: NIO channel access serialized through event loop
-
     private let inputBuffer: AsyncStream<UInt8>
     private let inputContinuation: AsyncStream<UInt8>.Continuation
     private let outputHandler: @Sendable (String) -> Void
     private let lock = NSLock()
     private var size: TerminalSize
 
+    /// Errors that can occur during SSH backend initialization.
+    public enum Error: Swift.Error {
+        /// The async stream continuation was unexpectedly unavailable.
+        case continuationUnavailable
+    }
+
     /// Creates an SSH backend with the given initial terminal size and output handler.
     /// - Parameters:
     ///   - initialSize: The client's reported terminal dimensions.
     ///   - outputHandler: A closure called with strings to send to the SSH client.
+    /// - Throws: ``Error/continuationUnavailable`` if the async stream continuation
+    ///   cannot be obtained.
     public init(
         initialSize: TerminalSize = TerminalSize(columns: 80, rows: 24),
         outputHandler: @escaping @Sendable (String) -> Void
-    ) {
+    ) throws {
         self.size = initialSize
         self.outputHandler = outputHandler
         var cont: AsyncStream<UInt8>.Continuation?
         self.inputBuffer = AsyncStream { cont = $0 }
         guard let continuation = cont else {
-            fatalError("AsyncStream continuation must be available")
+            throw Error.continuationUnavailable
         }
         self.inputContinuation = continuation
     }

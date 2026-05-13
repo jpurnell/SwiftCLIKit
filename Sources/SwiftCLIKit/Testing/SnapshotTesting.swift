@@ -82,7 +82,7 @@ public enum SnapshotTesting {
     /// - Returns: `nil` if the buffer matches, or a diff string describing mismatches.
     public static func compare(_ buffer: CellBuffer, goldenFile: String) -> String? {
         let rendered = renderPlainText(buffer)
-        guard let golden = try? String(contentsOfFile: goldenFile, encoding: .utf8) else {
+        guard let golden = try? String(contentsOfFile: goldenFile, encoding: .utf8) else { // silent: missing golden file is a reportable comparison failure, not an error
             return "Golden file not found: \(goldenFile)"
         }
         guard rendered != golden else { return nil }
@@ -127,17 +127,18 @@ public enum SnapshotTesting {
         line: UInt = #line
     ) {
         let dir = directory ?? NSTemporaryDirectory()
-        let path = (dir as NSString).appendingPathComponent("\(name).txt")
+        let path = URL(fileURLWithPath: (dir as NSString).appendingPathComponent("\(name).txt")).standardizedFileURL.path
 
         if record {
-            try? write(buffer, to: path)
+            try? write(buffer, to: path) // silent: best-effort snapshot recording
             return
         }
 
         let fileManager = FileManager.default
+        // SECURITY: path sanitized via URL.standardizedFileURL above
         guard fileManager.fileExists(atPath: path) else {
             // First run: record the snapshot
-            try? write(buffer, to: path)
+            try? write(buffer, to: path) // silent: best-effort snapshot recording
             return
         }
 

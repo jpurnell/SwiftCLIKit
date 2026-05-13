@@ -107,21 +107,21 @@ struct KittyEncoderTests {
 struct SixelEncoderTests {
 
     @Test("Output starts with DCS header and ends with ST")
-    func headerAndFooter() {
-        let pixels = PixelData(
+    func headerAndFooter() throws {
+        let pixels = try #require(PixelData(
             bytes: [255, 0, 0, 255, 0, 255, 0, 255,
                     0, 0, 255, 255, 255, 255, 0, 255],
             width: 2, height: 2
-        )
+        ))
         let result = SixelEncoder.encode(pixels: pixels)
         #expect(result.hasPrefix("\u{1B}Pq"))
         #expect(result.hasSuffix("\u{1B}\\"))
     }
 
     @Test("Color palette entries formatted correctly")
-    func paletteFormat() {
+    func paletteFormat() throws {
         // Single red pixel
-        let pixels = PixelData(bytes: [255, 0, 0, 255], width: 1, height: 1)
+        let pixels = try #require(PixelData(bytes: [255, 0, 0, 255], width: 1, height: 1))
         let result = SixelEncoder.encode(pixels: pixels)
         // Red = 100%, Green = 0%, Blue = 0%
         #expect(result.contains("#0;2;100;0;0"))
@@ -129,8 +129,7 @@ struct SixelEncoderTests {
 
     @Test("Zero-dimension pixels returns empty string")
     func zeroDimension() {
-        let pixels = PixelData(bytes: [], width: 0, height: 0)
-        let result = SixelEncoder.encode(pixels: pixels)
+        let result = SixelEncoder.encode(pixels: .empty)
         #expect(result.isEmpty)
     }
 }
@@ -141,13 +140,13 @@ struct SixelEncoderTests {
 struct ASCIIArtTests {
 
     @Test("2x2 pixels renders to 1x1 cell grid")
-    func twoByTwoToOneByOne() {
+    func twoByTwoToOneByOne() throws {
         // 2 columns, 2 rows of red pixels
-        let pixels = PixelData(
+        let pixels = try #require(PixelData(
             bytes: [255, 0, 0, 255, 255, 0, 0, 255,
                     255, 0, 0, 255, 255, 0, 0, 255],
             width: 2, height: 2
-        )
+        ))
         let result = ASCIIArt.render(pixels: pixels, width: 1, height: 1)
         #expect(result.count == 1)
         #expect(result[0].count == 1)
@@ -160,25 +159,25 @@ struct ASCIIArtTests {
     @Test("Empty pixels returns empty result")
     func emptyPixels() {
         let result = ASCIIArt.render(
-            pixels: PixelData(bytes: [], width: 0, height: 0),
+            pixels: .empty,
             width: 10, height: 5
         )
         #expect(result.isEmpty)
     }
 
     @Test("Zero target dimensions returns empty result")
-    func zeroTargetDimensions() {
-        let pixels = PixelData(bytes: [255, 0, 0, 255], width: 1, height: 1)
+    func zeroTargetDimensions() throws {
+        let pixels = try #require(PixelData(bytes: [255, 0, 0, 255], width: 1, height: 1))
         let result = ASCIIArt.render(pixels: pixels, width: 0, height: 0)
         #expect(result.isEmpty)
     }
 
     @Test("Scale produces correct output dimensions")
-    func scaleOutputDimensions() {
-        let pixels = PixelData(
+    func scaleOutputDimensions() throws {
+        let pixels = try #require(PixelData(
             bytes: [UInt8](repeating: 255, count: 10 * 10 * 4),
             width: 10, height: 10
-        )
+        ))
         let scaled = ASCIIArt.scale(pixels: pixels, targetWidth: 5, targetHeight: 5)
         #expect(scaled.width == 5)
         #expect(scaled.height == 5)
@@ -191,12 +190,11 @@ struct ASCIIArtTests {
 struct InlineImageTests {
 
     @Test("Kitty capability uses KittyEncoder")
-    func kittyEscapeSequence() {
+    func kittyEscapeSequence() throws {
         let data: [UInt8] = [0x89, 0x50, 0x4E, 0x47]
         let image = InlineImage(fileData: data, capability: .kitty)
-        let result = image.escapeSequence()
-        #expect(result != nil)
-        #expect(result?.hasPrefix("\u{1B}_G") == true)
+        let result = try #require(image.escapeSequence())
+        #expect(result.hasPrefix("\u{1B}_G"))
     }
 
     @Test("None capability returns nil escape sequence")
@@ -207,12 +205,11 @@ struct InlineImageTests {
     }
 
     @Test("iTerm2 capability uses ITermEncoder")
-    func itermEscapeSequence() {
+    func itermEscapeSequence() throws {
         let data: [UInt8] = [0x89, 0x50, 0x4E, 0x47]
         let image = InlineImage(fileData: data, capability: .iterm2)
-        let result = image.escapeSequence()
-        #expect(result != nil)
-        #expect(result?.contains("1337;File=") == true)
+        let result = try #require(image.escapeSequence())
+        #expect(result.contains("1337;File="))
     }
 
     @Test("renderASCII without pixelData returns empty")
@@ -223,12 +220,12 @@ struct InlineImageTests {
     }
 
     @Test("renderASCII with pixelData returns cells")
-    func renderASCIIWithPixelData() {
-        let pixels = PixelData(
+    func renderASCIIWithPixelData() throws {
+        let pixels = try #require(PixelData(
             bytes: [255, 0, 0, 255, 0, 255, 0, 255,
                     0, 0, 255, 255, 255, 255, 0, 255],
             width: 2, height: 2
-        )
+        ))
         let image = InlineImage(pixelData: pixels, capability: ImageCapability.none)
         let result = image.renderASCII(width: 2, height: 1)
         #expect(result.count == 1)
@@ -242,15 +239,15 @@ struct InlineImageTests {
 struct PixelDataTests {
 
     @Test("Pixel access returns correct RGBA values")
-    func pixelAccess() {
+    func pixelAccess() throws {
         let bytes: [UInt8] = [10, 20, 30, 40, 50, 60, 70, 80]
-        let pixels = PixelData(bytes: bytes, width: 2, height: 1)
-        let p0 = pixels.pixel(x: 0, y: 0)
+        let pixels = try #require(PixelData(bytes: bytes, width: 2, height: 1))
+        let p0 = try #require(pixels.pixel(x: 0, y: 0))
         #expect(p0.r == 10)
         #expect(p0.g == 20)
         #expect(p0.b == 30)
         #expect(p0.a == 40)
-        let p1 = pixels.pixel(x: 1, y: 0)
+        let p1 = try #require(pixels.pixel(x: 1, y: 0))
         #expect(p1.r == 50)
         #expect(p1.g == 60)
         #expect(p1.b == 70)

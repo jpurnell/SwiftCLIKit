@@ -24,9 +24,8 @@ import Glibc
 /// let terminal = RawTerminal(fileDescriptor: pipe.fileHandleForReading.fileDescriptor)
 /// let byte = terminal.readByte()  // Optional(65)
 /// ```
+// Justification: original termios stored at init, restored at deinit only; fd is immutable after init
 public final class RawTerminal: @unchecked Sendable {
-    // Justification: original termios stored at init, restored at deinit only
-
     private let fd: Int32
     private let ownsDescriptor: Bool
     #if canImport(Darwin) || canImport(Glibc)

@@ -6,6 +6,7 @@ import Foundation
 import NIOCore
 import NIOPosix
 import NIOSSH
+import os
 import SwiftCLIKit
 
 /// An SSH server that can spawn isolated SwiftCLIKit app sessions per connection.
@@ -25,6 +26,8 @@ import SwiftCLIKit
 ///   all connections without authentication by default. Production deployments
 ///   should configure ``SSHConfiguration/authMode`` appropriately.
 public struct SSHServer: Sendable {
+    private static let logger = Logger(subsystem: "com.swiftclikit", category: "SSHServer")
+
     /// The host address to bind to.
     public let host: String
     /// The port to listen on.
@@ -39,7 +42,7 @@ public struct SSHServer: Sendable {
         /// Generate an ephemeral Ed25519 key each time the server starts (development mode).
         case generateEphemeral
         /// Load the host key from the given file path.
-        case filePath(String)
+        case filePath(String) // LIVE: public API
     }
 
     /// Creates an SSH server with the given parameters.
@@ -93,7 +96,7 @@ public struct SSHServer: Sendable {
             .serverChannelOption(.socketOption(.so_reuseaddr), value: 1)
 
         let serverChannel = try await bootstrap.bind(host: host, port: port).get()
-        print("SSH server listening on \(host):\(port)")
+        Self.logger.info("SSH server listening on \(host, privacy: .public):\(port, privacy: .public)")
 
         do {
             try await serverChannel.closeFuture.get()
@@ -109,9 +112,8 @@ public struct SSHServer: Sendable {
 ///
 /// Intended for development use only. Production deployments should use
 /// ``SSHConfiguration/AuthMode/password(_:)`` or ``SSHConfiguration/AuthMode/publicKey``.
+// Justification: stateless delegate with no mutable fields; all properties are computed
 private final class AcceptAllAuth: NIOSSHServerUserAuthenticationDelegate, @unchecked Sendable {
-    // Justification: stateless delegate with no mutable fields after init
-
     /// Reports all authentication methods as supported.
     var supportedAuthenticationMethods: NIOSSHAvailableUserAuthenticationMethods { .all }
 

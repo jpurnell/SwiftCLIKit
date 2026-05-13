@@ -11,6 +11,7 @@ extension Color: Codable {
         case type, value, r, g, b
     }
 
+    /// Creates a color by decoding from the given decoder.
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(String.self, forKey: .type)
@@ -33,6 +34,7 @@ extension Color: Codable {
         }
     }
 
+    /// Encodes the color into the given encoder.
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {

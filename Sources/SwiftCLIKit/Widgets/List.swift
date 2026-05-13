@@ -140,6 +140,7 @@ public struct ListState: Sendable, Equatable {
 // MARK: - AccessibleWidget
 
 extension List: AccessibleWidget {
+    /// An accessibility label describing the list, including item count and current selection.
     public var accessibilityLabel: AccessibilityLabel {
         let count = items.count == 1 ? "1 item" : "\(items.count) items"
         var label = "List with \(count)"

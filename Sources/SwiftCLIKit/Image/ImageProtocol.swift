@@ -16,6 +16,9 @@ import Foundation
 /// let pixels = PixelData(bytes: red, width: 2, height: 2)
 /// ```
 public struct PixelData: Sendable, Equatable {
+    /// An empty pixel buffer with zero dimensions.
+    public static let empty = PixelData(width: 0, height: 0)
+
     /// Raw RGBA pixel bytes. Length must equal `width * height * 4`.
     public let bytes: [UInt8]
     /// Image width in pixels.
@@ -23,16 +26,25 @@ public struct PixelData: Sendable, Equatable {
     /// Image height in pixels.
     public let height: Int
 
+    /// Internal non-failable initializer for known-valid empty buffers.
+    private init(width: Int, height: Int) {
+        self.bytes = []
+        self.width = width
+        self.height = height
+    }
+
     /// Creates a pixel data buffer.
+    ///
+    /// Returns `nil` if the inputs are invalid (negative dimensions or
+    /// byte-count mismatch).
     /// - Parameters:
     ///   - bytes: RGBA pixel bytes. Count must equal `width * height * 4`.
     ///   - width: Image width in pixels. Must be non-negative.
     ///   - height: Image height in pixels. Must be non-negative.
-    public init(bytes: [UInt8], width: Int, height: Int) {
-        precondition(width >= 0, "Width must be non-negative")
-        precondition(height >= 0, "Height must be non-negative")
-        precondition(bytes.count == width * height * 4,
-                     "Byte count (\(bytes.count)) must equal width * height * 4 (\(width * height * 4))")
+    public init?(bytes: [UInt8], width: Int, height: Int) {
+        guard width >= 0 else { return nil }
+        guard height >= 0 else { return nil }
+        guard bytes.count == width * height * 4 else { return nil }
         self.bytes = bytes
         self.width = width
         self.height = height
@@ -42,10 +54,11 @@ public struct PixelData: Sendable, Equatable {
     /// - Parameters:
     ///   - x: Horizontal pixel coordinate (0-based).
     ///   - y: Vertical pixel coordinate (0-based).
-    /// - Returns: A tuple of (r, g, b, a) component values.
-    public func pixel(x: Int, y: Int) -> (r: UInt8, g: UInt8, b: UInt8, a: UInt8) {
-        precondition(x >= 0 && x < width, "x (\(x)) out of bounds [0, \(width))")
-        precondition(y >= 0 && y < height, "y (\(y)) out of bounds [0, \(height))")
+    /// - Returns: A tuple of (r, g, b, a) component values, or `nil` if the
+    ///   coordinates are out of bounds.
+    public func pixel(x: Int, y: Int) -> (r: UInt8, g: UInt8, b: UInt8, a: UInt8)? {
+        guard x >= 0, x < width else { return nil }
+        guard y >= 0, y < height else { return nil }
         let offset = (y * width + x) * 4
         return (bytes[offset], bytes[offset + 1], bytes[offset + 2], bytes[offset + 3])
     }

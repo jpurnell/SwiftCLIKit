@@ -59,7 +59,7 @@ public struct NotificationManager: Sendable {
     }
 
     /// Whether there are no active toasts.
-    public var isEmpty: Bool { toasts.isEmpty }
+    public var isEmpty: Bool { toasts.count == 0 }
 
     /// Renders the notification toasts into the given frame.
     /// - Parameters:

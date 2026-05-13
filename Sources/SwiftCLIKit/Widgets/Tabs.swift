@@ -97,6 +97,7 @@ public struct Tabs: Sendable {
 // MARK: - AccessibleWidget
 
 extension Tabs: AccessibleWidget {
+    /// An accessibility label describing the tab bar, including the active tab title and position.
     public var accessibilityLabel: AccessibilityLabel {
         let active = activeIndex < titles.count ? titles[activeIndex] : ""
         return AccessibilityLabel(

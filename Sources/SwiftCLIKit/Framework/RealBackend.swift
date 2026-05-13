@@ -24,8 +24,8 @@ import Glibc
 /// backend.leaveAlternateScreen()
 /// backend.disableRawMode()
 /// ```
+// Justification: terminal state managed in init/deinit lifecycle; file descriptors are OS-level thread-safe
 public final class RealBackend: TerminalBackend, @unchecked Sendable {
-    // Justification: terminal state managed in init/deinit lifecycle
     private let terminal: RawTerminal
     private let reader: KeyReader
     private var altScreen: AlternateScreen?

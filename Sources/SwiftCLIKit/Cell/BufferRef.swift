@@ -12,9 +12,8 @@ import Foundation
 ///
 /// `Frame` uses `BufferRef` internally so that sub-frames created via
 /// ``Frame/subFrame(_:)`` write into the same buffer as their parent.
+// Justification: Frame is always used on a single thread within a render pass; no concurrent access
 public final class BufferRef: @unchecked Sendable {
-    // Justification: Frame is always used on a single thread within a render pass
-
     /// The underlying cell buffer.
     public var buffer: CellBuffer
 

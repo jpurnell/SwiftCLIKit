@@ -13,20 +13,20 @@ struct CmdTests {
     func cmdNoneExists() {
         let cmd = Cmd<Int>.none
         // Verify it is the none kind
-        if case .none = cmd.kind {
+        if case .empty = cmd.kind {
             #expect(Bool(true))
         } else {
-            #expect(Bool(false), "Expected .none kind")
+            #expect(Bool(false), "Expected .empty kind")
         }
     }
 
     @Test("Cmd.quit constructs without crashing")
     func cmdQuitExists() {
         let cmd = Cmd<Int>.quit
-        if case .quit = cmd.kind {
+        if case .terminate = cmd.kind {
             #expect(Bool(true))
         } else {
-            #expect(Bool(false), "Expected .quit kind")
+            #expect(Bool(false), "Expected .terminate kind")
         }
     }
 

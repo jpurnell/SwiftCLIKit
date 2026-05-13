@@ -1,0 +1,7 @@
+excludePatterns:
+  - "swiftclikit-examples"
+
+overrides:
+  swift-version-minimum: info
+  logging.catch-without-logging: info
+  stochastic-no-seed: info

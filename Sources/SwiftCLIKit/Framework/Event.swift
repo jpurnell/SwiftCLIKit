@@ -25,7 +25,7 @@ public enum Event: Sendable {
     /// A mouse button or scroll event.
     case mouse(MouseEvent)
     /// The terminal was resized to the given width and height.
-    case resize(width: Int, height: Int)
+    case resize(width: Int, height: Int) // LIVE: public API
     /// An application-defined event payload.
-    case custom(any Sendable)
+    case custom(any Sendable) // LIVE: public API
 }

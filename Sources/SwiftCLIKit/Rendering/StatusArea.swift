@@ -8,9 +8,8 @@ import Foundation
 ///
 /// `StatusArea` keeps a bounded list of the most recent messages and can render
 /// them as truncated, optionally dimmed lines.
+// Justification: all mutable state (messages array) protected by NSLock
 public final class StatusArea: @unchecked Sendable {
-    // Justification: NSLock-protected mutations only
-
     private let maxMessages: Int
     private var messages: [String] = []
     private let lock = NSLock()

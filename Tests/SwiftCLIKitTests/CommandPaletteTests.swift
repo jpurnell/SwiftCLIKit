@@ -12,34 +12,28 @@ struct CommandPaletteTests {
     // MARK: - FuzzyMatcher
 
     @Test("FuzzyMatcher exact match scores highest")
-    func exactMatchScoresHighest() {
-        let exact = FuzzyMatcher.score("Save", against: "Save")
-        let prefix = FuzzyMatcher.score("Sav", against: "Save")
-        let subsequence = FuzzyMatcher.score("Sv", against: "Save")
+    func exactMatchScoresHighest() throws {
+        let exact = try #require(FuzzyMatcher.score("Save", against: "Save"))
+        let prefix = try #require(FuzzyMatcher.score("Sav", against: "Save"))
+        let subsequence = try #require(FuzzyMatcher.score("Sv", against: "Save"))
 
-        #expect(exact != nil)
-        #expect(prefix != nil)
-        #expect(subsequence != nil)
+        #expect(exact == 19)   // exactMatchBonus(10) + prefixBonus(5) + 4*perChar(1)
+        #expect(prefix == 12)  // prefixBonus(5) + 3*perChar(1) + 2*consecutiveBonus(2)
+        #expect(subsequence == 2) // 2*perChar(1), no bonuses
 
-        if let e = exact, let p = prefix {
-            #expect(e > p, "Exact match should score higher than prefix")
-        }
-        if let p = prefix, let s = subsequence {
-            #expect(p > s, "Prefix should score higher than scattered subsequence")
-        }
+        #expect(exact > prefix, "Exact match should score higher than prefix")
+        #expect(prefix > subsequence, "Prefix should score higher than scattered subsequence")
     }
 
     @Test("FuzzyMatcher prefix beats subsequence")
-    func prefixBeatsSubsequence() {
-        let prefix = FuzzyMatcher.score("Sav", against: "Save File")
-        let subsequence = FuzzyMatcher.score("SFi", against: "Save File")
+    func prefixBeatsSubsequence() throws {
+        let prefix = try #require(FuzzyMatcher.score("Sav", against: "Save File"))
+        let subsequence = try #require(FuzzyMatcher.score("SFi", against: "Save File"))
 
-        #expect(prefix != nil)
-        #expect(subsequence != nil)
+        #expect(prefix == 12)     // prefixBonus(5) + 3*perChar(1) + 2*consecutiveBonus(2)
+        #expect(subsequence == 5) // 3*perChar(1) + 1*consecutiveBonus(2)
 
-        if let p = prefix, let s = subsequence {
-            #expect(p > s, "Prefix match should rank above scattered subsequence")
-        }
+        #expect(prefix > subsequence, "Prefix match should rank above scattered subsequence")
     }
 
     @Test("FuzzyMatcher no match returns nil")
@@ -49,9 +43,9 @@ struct CommandPaletteTests {
     }
 
     @Test("FuzzyMatcher case insensitive matching")
-    func caseInsensitive() {
-        let result = FuzzyMatcher.score("save", against: "Save File")
-        #expect(result != nil, "Case-insensitive match should succeed")
+    func caseInsensitive() throws {
+        let result = try #require(FuzzyMatcher.score("save", against: "Save File"))
+        #expect(result > 0, "Case-insensitive match should produce a positive score")
     }
 
     @Test("FuzzyMatcher empty query matches everything with zero score")

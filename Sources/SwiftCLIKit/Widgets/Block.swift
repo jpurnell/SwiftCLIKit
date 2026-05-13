@@ -12,7 +12,9 @@ import Foundation
 /// let sides: BorderSet = [.top, .bottom]
 /// ```
 public struct BorderSet: OptionSet, Sendable, Equatable {
+    /// The raw integer value of the option set.
     public let rawValue: UInt8
+    /// Creates a border-set option set from a raw value.
     public init(rawValue: UInt8) { self.rawValue = rawValue }
 
     /// The top border.

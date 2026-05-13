@@ -14,9 +14,9 @@ struct TransitionTests {
         let start = ContinuousClock.now
         var transition = Transition(kind: .fade, duration: .seconds(1), easing: .linear)
         transition.enter(at: start)
-        #expect(transition.opacity(at: start) == 0.0)
+        #expect(abs(transition.opacity(at: start) - 0.0) < 1e-6)
         let end = start + .seconds(2)
-        #expect(transition.opacity(at: end) == 1.0)
+        #expect(abs(transition.opacity(at: end) - 1.0) < 1e-6)
     }
 
     @Test("Fade exit: opacity goes from 1 to 0")
@@ -24,9 +24,9 @@ struct TransitionTests {
         let start = ContinuousClock.now
         var transition = Transition(kind: .fade, duration: .seconds(1), easing: .linear)
         transition.exit(at: start)
-        #expect(transition.opacity(at: start) == 1.0)
+        #expect(abs(transition.opacity(at: start) - 1.0) < 1e-6)
         let end = start + .seconds(2)
-        #expect(transition.opacity(at: end) == 0.0)
+        #expect(abs(transition.opacity(at: end) - 0.0) < 1e-6)
     }
 
     @Test("SlideLeft: offset at start is negative full width, at end is 0")

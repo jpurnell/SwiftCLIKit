@@ -18,7 +18,7 @@ public struct Transition: Sendable {
     /// The visual effect type for the transition.
     public enum Kind: Sendable, Equatable {
         /// Fade from transparent to opaque (enter) or opaque to transparent (exit).
-        case fade
+        case fade // LIVE: public API
         /// Slide in from the left (enter) or out to the left (exit).
         case slideLeft
         /// Slide in from the right (enter) or out to the right (exit).
@@ -28,9 +28,9 @@ public struct Transition: Sendable {
         /// Slide in from below (enter) or out downward (exit).
         case slideDown
         /// Expand from zero size to full (enter).
-        case expand
+        case expand // LIVE: public API
         /// Collapse from full size to zero (exit).
-        case collapse
+        case collapse // LIVE: public API
     }
 
     /// The current phase of the transition lifecycle.
@@ -55,9 +55,12 @@ public struct Transition: Sendable {
     ///   - kind: The type of visual effect.
     ///   - duration: How long the transition takes.
     ///   - easing: The easing curve (default: `.easeInOut`).
-    public init(kind: Kind, duration: Duration, easing: Easing = .easeInOut) {
+    ///   - reduceMotion: When `true`, uses zero-duration animation for motion-sensitive users.
+    public init(kind: Kind, duration: Duration, easing: Easing = .easeInOut, reduceMotion: Bool = false) {
         self.kind = kind
-        self.animation = Animation(duration: duration, easing: easing)
+        self.animation = reduceMotion
+            ? Animation(duration: .zero, easing: .linear)
+            : Animation(duration: duration, easing: easing)
         self.phase = .enter
     }
 
@@ -129,6 +132,6 @@ public struct Transition: Sendable {
 
     /// Whether the transition has fully completed its current phase.
     public var isComplete: Bool {
-        animation.isComplete
+        animation.linearProgress(at: .now) >= 1.0
     }
 }

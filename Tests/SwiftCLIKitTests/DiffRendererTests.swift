@@ -61,9 +61,20 @@ struct DiffRendererTests {
         let output = renderer.render(current: current, previous: previous)
         #expect(output.contains("A"))
         #expect(output.contains("B"))
-        // Count cursor-move sequences — should be 1, not 2
-        let cursorMoves = output.components(separatedBy: "\u{1B}[").count - 1
-        #expect(cursorMoves <= 2, "Adjacent cells should not require separate cursor moves for each")
+        // Count cursor-position sequences (ESC[...H), not all ESC[ sequences
+        // which also include style SGR (ESC[...m) and the trailing reset.
+        var moveCount = 0
+        var searchStart = output.startIndex
+        while let escRange = output.range(of: "\u{1B}[", range: searchStart..<output.endIndex) {
+            let afterEsc = escRange.upperBound
+            if let hIndex = output[afterEsc...].firstIndex(where: { $0 == "H" || $0 == "m" }) {
+                if output[hIndex] == "H" { moveCount += 1 }
+                searchStart = output.index(after: hIndex)
+            } else {
+                break
+            }
+        }
+        #expect(moveCount == 1, "Adjacent cells should need only one cursor move, got \(moveCount)")
     }
 
     @Test("Empty current buffer with nil previous produces empty output")

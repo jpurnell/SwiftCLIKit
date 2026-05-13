@@ -30,7 +30,9 @@ public struct MouseEvent: Sendable, Equatable {
 
     /// Modifier keys that can accompany a mouse event.
     public struct KeyModifiers: OptionSet, Sendable, Equatable {
+        /// The raw integer value of the option set.
         public let rawValue: UInt8
+        /// Creates a key-modifier option set from a raw value.
         public init(rawValue: UInt8) { self.rawValue = rawValue }
         /// Shift key.
         public static let shift = KeyModifiers(rawValue: 1 << 0)

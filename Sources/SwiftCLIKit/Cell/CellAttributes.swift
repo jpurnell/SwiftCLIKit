@@ -11,7 +11,9 @@ import Foundation
 /// let style: CellAttributes = [.bold, .italic, .underline]
 /// ```
 public struct CellAttributes: OptionSet, Sendable, Equatable, Hashable {
+    /// The raw integer value of the option set.
     public let rawValue: UInt8
+    /// Creates a cell-attributes option set from a raw value.
     public init(rawValue: UInt8) { self.rawValue = rawValue }
 
     /// Bold / increased intensity.

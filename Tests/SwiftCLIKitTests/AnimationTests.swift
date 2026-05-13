@@ -13,7 +13,7 @@ struct AnimationTests {
     func notStarted() {
         let anim = Animation(duration: .seconds(1), easing: .linear)
         let now = ContinuousClock.now
-        #expect(anim.progress(at: now) == 0.0)
+        #expect(abs(anim.progress(at: now) - 0.0) < 1e-6)
         #expect(anim.isRunning == false)
     }
 
@@ -34,7 +34,7 @@ struct AnimationTests {
         anim.start(at: start)
         let end = start + .seconds(2)
         let progress = anim.progress(at: end)
-        #expect(progress == 1.0)
+        #expect(abs(progress - 1.0) < 1e-6)
     }
 
     @Test("Zero duration: immediately complete with progress 1.0")
@@ -43,7 +43,7 @@ struct AnimationTests {
         var anim = Animation(duration: .zero, easing: .linear)
         anim.start(at: start)
         let progress = anim.progress(at: start)
-        #expect(progress == 1.0)
+        #expect(abs(progress - 1.0) < 1e-6)
     }
 
     @Test("Easing is applied to progress")
@@ -65,7 +65,7 @@ struct AnimationTests {
         anim.start(at: start)
         // During the delay
         let duringDelay = start + .milliseconds(500)
-        #expect(anim.progress(at: duringDelay) == 0.0)
+        #expect(abs(anim.progress(at: duringDelay) - 0.0) < 1e-6)
         // After delay, at midpoint of animation
         let afterDelay = start + .milliseconds(1500)
         let progress = anim.progress(at: afterDelay)

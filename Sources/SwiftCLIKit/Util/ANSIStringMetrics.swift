@@ -11,7 +11,7 @@ public enum ANSIStringMetrics: Sendable {
 
     /// Strips ANSI escape sequences from a string.
     private static func stripANSI(_ s: String) -> String {
-        guard let regex = try? NSRegularExpression(pattern: "\u{001B}\\[[0-9;]*[A-Za-z]") else {
+        guard let regex = try? NSRegularExpression(pattern: "\u{001B}\\[[0-9;]*[A-Za-z]") else { // silent: regex is compile-time constant
             return s
         }
         let range = NSRange(s.startIndex..., in: s)

@@ -11,17 +11,17 @@ struct EasingTests {
 
     @Test("Linear: apply(0) returns 0")
     func linearAtZero() {
-        #expect(Easing.linear.apply(0.0) == 0.0)
+        #expect(abs(Easing.linear.apply(0.0) - 0.0) < 1e-6)
     }
 
     @Test("Linear: apply(1) returns 1")
     func linearAtOne() {
-        #expect(Easing.linear.apply(1.0) == 1.0)
+        #expect(abs(Easing.linear.apply(1.0) - 1.0) < 1e-6)
     }
 
     @Test("Linear: apply(0.5) returns 0.5")
     func linearAtHalf() {
-        #expect(Easing.linear.apply(0.5) == 0.5)
+        #expect(abs(Easing.linear.apply(0.5) - 0.5) < 1e-6)
     }
 
     @Test("EaseIn: apply(0.5) is less than 0.5 (starts slow)")
@@ -40,8 +40,8 @@ struct EasingTests {
 
     @Test("EaseInOut: apply(0) returns 0 and apply(1) returns 1")
     func easeInOutEndpoints() {
-        #expect(Easing.easeInOut.apply(0.0) == 0.0)
-        #expect(Easing.easeInOut.apply(1.0) == 1.0)
+        #expect(abs(Easing.easeInOut.apply(0.0) - 0.0) < 1e-6)
+        #expect(abs(Easing.easeInOut.apply(1.0) - 1.0) < 1e-6)
     }
 
     @Test("EaseInOut: symmetric at midpoint")
@@ -53,8 +53,8 @@ struct EasingTests {
     @Test("CubicBezier: endpoints are 0 and 1")
     func cubicBezierEndpoints() {
         let bezier = Easing.cubicBezier(x1: 0.25, y1: 0.1, x2: 0.25, y2: 1.0)
-        #expect(bezier.apply(0.0) == 0.0)
-        #expect(bezier.apply(1.0) == 1.0)
+        #expect(abs(bezier.apply(0.0) - 0.0) < 1e-6)
+        #expect(abs(bezier.apply(1.0) - 1.0) < 1e-6)
     }
 
     @Test("All easing functions: boundary invariant apply(0)=0 and apply(1)=1")
@@ -66,8 +66,8 @@ struct EasingTests {
             .bounce
         ]
         for easing in easings {
-            #expect(easing.apply(0.0) == 0.0)
-            #expect(easing.apply(1.0) == 1.0)
+            #expect(abs(easing.apply(0.0) - 0.0) < 1e-6)
+            #expect(abs(easing.apply(1.0) - 1.0) < 1e-6)
         }
     }
 

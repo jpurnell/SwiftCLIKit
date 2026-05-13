@@ -32,9 +32,9 @@ struct AnimatedValueTests {
             animation: Animation(duration: .seconds(1), easing: .linear)
         )
         animated.start(at: start)
-        #expect(animated.value(at: start) == 0.0)
+        #expect(abs(animated.value(at: start) - 0.0) < 1e-6)
         let pastEnd = start + .seconds(5)
-        #expect(animated.value(at: pastEnd) == 100.0)
+        #expect(abs(animated.value(at: pastEnd) - 100.0) < 1e-6)
     }
 
     @Test("Int interpolation at midpoint: from 0 to 10 yields 5")

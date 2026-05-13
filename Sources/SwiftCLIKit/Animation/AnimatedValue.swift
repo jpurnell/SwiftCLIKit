@@ -28,10 +28,13 @@ public struct AnimatedValue<T: Sendable>: Sendable {
     ///   - from: The starting value.
     ///   - to: The ending value.
     ///   - animation: The animation controlling progress.
-    public init(from: T, to: T, animation: Animation) {
+    ///   - reduceMotion: When `true`, replaces animation with zero-duration for motion-sensitive users.
+    public init(from: T, to: T, animation: Animation, reduceMotion: Bool = false) {
         self.from = from
         self.to = to
-        self.animation = animation
+        self.animation = reduceMotion
+            ? Animation(duration: .zero, easing: .linear)
+            : animation
     }
 
     /// Start the underlying animation.

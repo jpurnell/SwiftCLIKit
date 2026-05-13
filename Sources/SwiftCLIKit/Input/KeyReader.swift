@@ -92,7 +92,7 @@ public struct KeyReader: Sendable {
 
         if firstParam == 0x3C { // '<' — SGR mouse sequence
             var mouseBytes: [UInt8] = [0x3C]
-            while true {
+            while true { // SAFETY: Loop terminates on EOF (guard-nil return) or 'M'/'m' final byte (break). SGR mouse sequences are bounded: CSI < Cb;Cx;Cy M/m — at most ~20 bytes.
                 guard let mb = terminal.readByte() else { return .unknown(0x1B) }
                 mouseBytes.append(mb)
                 if mb == 0x4D || mb == 0x6D { // 'M' or 'm'
@@ -112,7 +112,7 @@ public struct KeyReader: Sendable {
         }
         params.append(firstParam)
 
-        while true {
+        while true { // SAFETY: Loop terminates on EOF (guard-nil return) or when a CSI final byte in range 0x40-0x7E is received (return). CSI params are bounded by protocol.
             guard let paramByte = terminal.readByte() else { return .escape }
             if paramByte >= 0x40 && paramByte <= 0x7E {
                 // Final byte

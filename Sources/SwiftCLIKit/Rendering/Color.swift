@@ -15,6 +15,7 @@ public enum ColorCapability: Int, Sendable, Comparable {
     /// Full 24-bit RGB truecolor (SGR 38;2;r;g;b).
     case truecolor
 
+    /// Returns whether the left-hand capability is strictly less capable than the right-hand one.
     public static func < (lhs: ColorCapability, rhs: ColorCapability) -> Bool {
         lhs.rawValue < rhs.rawValue
     }
@@ -225,7 +226,7 @@ public enum Color: Sendable, Equatable, Hashable {
     }
 
     /// Finds the nearest ANSI 8/16 color to the given RGB color.
-    private static func nearestANSI8(r: UInt8, g: UInt8, b: UInt8) -> ANSIColor {
+    static func nearestANSI8(r: UInt8, g: UInt8, b: UInt8) -> ANSIColor { // LIVE: library API for consumers
         let ri = Int(r)
         let gi = Int(g)
         let bi = Int(b)

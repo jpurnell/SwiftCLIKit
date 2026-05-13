@@ -13,8 +13,8 @@ import Foundation
 /// let backend = TestBackend(width: 80, height: 24)
 /// await backend.inject(.key(.character("a")))
 /// ```
+// Justification: NSLock protects all mutable state (buffer, history, event queue) across threads
 public final class TestBackend: TerminalBackend, @unchecked Sendable {
-    // Justification: internal lock protects buffer and event queue mutations
     private let lock = NSLock()
     private var buffer: CellBuffer
     private var history: [CellBuffer] = []
@@ -67,7 +67,7 @@ public final class TestBackend: TerminalBackend, @unchecked Sendable {
             let cont = getContinuation()
             cont?.yield(event)
             if delay > .zero {
-                try? await Task.sleep(for: delay)
+                try? await Task.sleep(for: delay) // silent: best-effort delay between injected events; cancellation is acceptable
             }
         }
     }
@@ -103,7 +103,7 @@ public final class TestBackend: TerminalBackend, @unchecked Sendable {
 
     /// Called by the App runtime to submit a rendered buffer.
     /// - Parameter buf: The buffer to record.
-    internal func submitRender(_ buf: CellBuffer) {
+    internal func submitRender(_ buf: CellBuffer) { // LIVE: library API for consumers
         lock.lock()
         buffer = buf
         history.append(buf)

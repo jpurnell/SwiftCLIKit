@@ -25,9 +25,8 @@ import Glibc
 ///     // When `screen` goes out of scope, the original content reappears.
 /// }
 /// ```
+// Justification: fd is immutable after init; enter/leave only called from main thread at app lifecycle boundaries
 public final class AlternateScreen: @unchecked Sendable {
-    // Justification: enter/leave only called from main thread at app lifecycle boundaries
-
     private let fd: Int32
 
     /// Whether the alternate screen is currently active.
@@ -47,8 +46,9 @@ public final class AlternateScreen: @unchecked Sendable {
 
     private func writeEscape(_ seq: String) {
         let bytes = Array(seq.utf8)
-        _ = bytes.withUnsafeBufferPointer { ptr in
-            write(fd, ptr.baseAddress, ptr.count)
+        bytes.withUnsafeBufferPointer { buffer in
+            guard let ptr = buffer.baseAddress else { return }
+            _ = write(fd, ptr, buffer.count)
         }
     }
 }

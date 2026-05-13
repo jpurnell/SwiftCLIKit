@@ -24,9 +24,9 @@ public struct Cmd<Message: Sendable>: Sendable {
     /// The internal representation of the command's intent.
     internal enum Kind: Sendable {
         /// No side effect.
-        case none
+        case empty
         /// Signal the app to terminate.
-        case quit
+        case terminate
         /// An async task that produces a message.
         case task(@Sendable () async -> Message)
         /// An async throwing task with an error handler.
@@ -67,10 +67,10 @@ public struct Cmd<Message: Sendable>: Sendable {
     public static func batch(_ cmds: [Cmd]) -> Cmd { Cmd(kind: .batch(cmds)) }
 
     /// A command that performs no side effect.
-    public static var none: Cmd { Cmd(kind: .none) }
+    public static var none: Cmd { Cmd(kind: Kind.empty) }
 
     /// A command that signals the app to quit.
-    public static var quit: Cmd { Cmd(kind: .quit) }
+    public static var quit: Cmd { Cmd(kind: Kind.terminate) }
 
     /// Creates a command that delivers a message after a delay.
     /// - Parameters:

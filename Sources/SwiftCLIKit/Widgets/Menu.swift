@@ -125,6 +125,7 @@ public struct Menu: Sendable {
 // MARK: - AccessibleWidget
 
 extension Menu: AccessibleWidget {
+    /// An accessibility label describing the menu, including item count and currently selected item.
     public var accessibilityLabel: AccessibilityLabel {
         let count = items.count
         let selected = selectedIndex < count ? items[selectedIndex].label : ""

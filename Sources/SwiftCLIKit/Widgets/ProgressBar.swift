@@ -42,7 +42,8 @@ public struct ProgressBar: Sendable {
     ///
     /// - Parameter frame: The frame to render into.
     public func render(into frame: inout Frame) {
-        guard total > 0 else {
+        let safeTotal = Double(total)
+        guard safeTotal > 0 else {
             // Division safety: render "0%" or empty bar for zero total
             if showPercentage {
                 frame.writeText("0%", x: 0, y: 0)
@@ -50,7 +51,7 @@ public struct ProgressBar: Sendable {
             return
         }
 
-        let ratio = Swift.min(Swift.max(Double(current) / Double(total), 0.0), 1.0)
+        let ratio = Swift.min(Swift.max(Double(current) / safeTotal, 0.0), 1.0)
         let label: String? = showPercentage ? "\(Int(ratio * 100))%" : nil
 
         let gauge = Gauge(

@@ -32,18 +32,14 @@ struct ScreenBufferTests {
     }
 
     @Test("Multiple appendLine calls preserve order")
-    func multipleLines() {
+    func multipleLines() throws {
         var buf = ScreenBuffer(width: 80)
         buf.appendLine("a")
         buf.appendLine("b")
         let raw = buf.raw
-        let rangeA = raw.range(of: "a\n")
-        let rangeB = raw.range(of: "b\n")
-        #expect(rangeA != nil)
-        #expect(rangeB != nil)
-        if let a = rangeA, let b = rangeB {
-            #expect(a.lowerBound < b.lowerBound)
-        }
+        let rangeA = try #require(raw.range(of: "a\n"))
+        let rangeB = try #require(raw.range(of: "b\n"))
+        #expect(rangeA.lowerBound < rangeB.lowerBound)
     }
 
     @Test("frame includes clear screen and home prefix")

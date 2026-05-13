@@ -13,9 +13,9 @@ struct SyntaxThemeTests {
     func defaultTheme() {
         let theme = SyntaxTheme.default
         // A proper default theme should map at least keyword, string, comment
-        #expect(theme.colors[.keyword] != nil)
-        #expect(theme.colors[.string] != nil)
-        #expect(theme.colors[.comment] != nil)
+        #expect(theme.colors[.keyword] == .truecolor(r: 198, g: 120, b: 221))
+        #expect(theme.colors[.string] == .truecolor(r: 152, g: 195, b: 121))
+        #expect(theme.colors[.comment] == .truecolor(r: 92, g: 99, b: 112))
     }
 
     @Test("color(for:) returns mapped color")

@@ -148,15 +148,15 @@ struct FormsTests {
     @Test("ValidationRule.required on empty returns error, on filled returns nil")
     func validationRequired() {
         let rule = ValidationRule.required
-        #expect(rule.validate("") != nil)
-        #expect(rule.validate("  ") != nil)
+        #expect(rule.validate("") == "This field is required")
+        #expect(rule.validate("  ") == "This field is required")
         #expect(rule.validate("hello") == nil)
     }
 
     @Test("ValidationRule.minLength(3) on 'ab' returns error")
     func validationMinLength() {
         let rule = ValidationRule.minLength(3)
-        #expect(rule.validate("ab") != nil)
+        #expect(rule.validate("ab") == "Must be at least 3 characters")
         #expect(rule.validate("abc") == nil)
         #expect(rule.validate("abcd") == nil)
     }
@@ -164,14 +164,14 @@ struct FormsTests {
     @Test("ValidationRule.maxLength(5) on long string returns error")
     func validationMaxLength() {
         let rule = ValidationRule.maxLength(5)
-        #expect(rule.validate("abcdef") != nil)
+        #expect(rule.validate("abcdef") == "Must be at most 5 characters")
         #expect(rule.validate("abcde") == nil)
     }
 
     @Test("ValidationRule.pattern matches regex")
     func validationPattern() {
         let rule = ValidationRule.pattern("^[0-9]+$")
-        #expect(rule.validate("abc") != nil)
+        #expect(rule.validate("abc") == "Does not match required pattern")
         #expect(rule.validate("123") == nil)
     }
 
@@ -182,7 +182,7 @@ struct FormsTests {
             (id: "email", value: "test@test.com", rules: [.required]),
         ])
         #expect(errors.count == 1)
-        #expect(errors["name"] != nil)
+        #expect(errors["name"] == "This field is required")
         #expect(errors["email"] == nil)
     }
 
@@ -196,7 +196,7 @@ struct FormsTests {
         ])
         let valid = form.validate()
         #expect(!valid)
-        #expect(form.errors["name"] != nil)
+        #expect(form.errors["name"] == "This field is required")
     }
 
     @Test("Form.focusNext cycles through fields")

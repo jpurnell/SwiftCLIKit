@@ -57,7 +57,7 @@ public enum ValidationRule: Sendable {
                     return "Does not match required pattern"
                 }
                 return nil
-            } catch {
+            } catch { // silent: error surfaced to caller as validation failure message
                 return "Invalid validation pattern: \(error.localizedDescription)"
             }
 

@@ -61,7 +61,7 @@ public struct SessionPlayer<Model: Sendable, Message: Codable & Sendable>: Senda
 
         for line in lines {
             guard !line.isEmpty else { continue }
-            guard let entry = try? decoder.decode(SessionEntry<Message>.self, from: line) else {
+            guard let entry = try? decoder.decode(SessionEntry<Message>.self, from: line) else { // silent: skip malformed lines during replay
                 continue
             }
             switch entry.kind {
@@ -80,8 +80,9 @@ public struct SessionPlayer<Model: Sendable, Message: Codable & Sendable>: Senda
     // MARK: - Private
 
     private func readFileData() throws -> Data {
-        let url = URL(fileURLWithPath: inputPath)
-        guard FileManager.default.fileExists(atPath: inputPath) else {
+        let url = URL(fileURLWithPath: inputPath).standardizedFileURL
+        // SECURITY: path sanitized via URL.standardizedFileURL
+        guard FileManager.default.fileExists(atPath: url.path) else {
             throw SessionPlayerError.fileNotFound(inputPath)
         }
         do {

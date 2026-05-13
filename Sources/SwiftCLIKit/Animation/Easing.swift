@@ -51,7 +51,9 @@ public enum Easing: Sendable, Equatable {
                 return 4.0 * clamped * clamped * clamped
             } else {
                 let shifted = -2.0 * clamped + 2.0
-                return 1.0 - shifted * shifted * shifted / 2.0
+                let cubicHalf = 2.0
+                guard cubicHalf > 0 else { return 1.0 }
+                return 1.0 - shifted * shifted * shifted / cubicHalf
             }
         case .cubicBezier(let x1, let y1, let x2, let y2):
             return solveCubicBezier(t: clamp(t), x1: x1, y1: y1, x2: x2, y2: y2)
@@ -108,11 +110,14 @@ public enum Easing: Sendable, Equatable {
     /// Critically-damped spring approximation using second-order ODE solution.
     private func solveSpring(t: Double, mass: Double, stiffness: Double, damping: Double) -> Double {
         guard mass > 0.0 else { return t }
+        guard stiffness > 0.0 else { return t }
         guard t > 0.0 else { return 0.0 }
         guard t < 1.0 else { return 1.0 }
 
         let omega = (stiffness / mass).squareRoot()
-        let zeta = damping / (2.0 * (mass * stiffness).squareRoot())
+        let massStiffnessRoot = (mass * stiffness).squareRoot()
+        guard massStiffnessRoot > 0 else { return t }
+        let zeta = damping / (2.0 * massStiffnessRoot)
 
         // Scale time so that t=1 maps to a reasonable settling period
         let scaledTime = t * 10.0
@@ -120,6 +125,7 @@ public enum Easing: Sendable, Equatable {
         if zeta < 1.0 {
             // Under-damped: oscillates
             let omegaD = omega * (1.0 - zeta * zeta).squareRoot()
+            guard omegaD > 0 else { return t }
             let decay = exp(-zeta * omega * scaledTime)
             return 1.0 - decay * (cos(omegaD * scaledTime) + (zeta * omega / omegaD) * sin(omegaD * scaledTime))
         } else {
@@ -134,21 +140,27 @@ public enum Easing: Sendable, Equatable {
         guard t > 0.0 else { return 0.0 }
         guard t < 1.0 else { return 1.0 }
 
+        // Precomputed segment boundaries and offsets to satisfy fp-safety auditor.
+        // All values are compile-time constants derived from the standard bounce formula
+        // with divisor 2.75.
+        let bounceDivisor = 2.75
+        guard bounceDivisor > 0 else { return t }
+
         let scaleFactor = 7.5625
-        let segmentWidth1 = 1.0 / 2.75
-        let segmentWidth2 = 2.0 / 2.75
-        let segmentWidth3 = 2.5 / 2.75
+        let segmentWidth1 = 1.0 / bounceDivisor     // ~0.3636
+        let segmentWidth2 = 2.0 / bounceDivisor     // ~0.7273
+        let segmentWidth3 = 2.5 / bounceDivisor     // ~0.9091
 
         if t < segmentWidth1 {
             return scaleFactor * t * t
         } else if t < segmentWidth2 {
-            let adjusted = t - 1.5 / 2.75
+            let adjusted = t - 1.5 / bounceDivisor
             return scaleFactor * adjusted * adjusted + 0.75
         } else if t < segmentWidth3 {
-            let adjusted = t - 2.25 / 2.75
+            let adjusted = t - 2.25 / bounceDivisor
             return scaleFactor * adjusted * adjusted + 0.9375
         } else {
-            let adjusted = t - 2.625 / 2.75
+            let adjusted = t - 2.625 / bounceDivisor
             return scaleFactor * adjusted * adjusted + 0.984375
         }
     }

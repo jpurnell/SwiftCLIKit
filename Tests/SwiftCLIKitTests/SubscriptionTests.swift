@@ -24,10 +24,10 @@ struct SubscriptionTests {
     func noneExists() {
         let sub = Subscription<Int>.none
         #expect(sub.key == "")
-        if case .none = sub.kind {
+        if case .empty = sub.kind {
             #expect(Bool(true))
         } else {
-            #expect(Bool(false), "Expected .none kind")
+            #expect(Bool(false), "Expected .empty kind")
         }
     }
 

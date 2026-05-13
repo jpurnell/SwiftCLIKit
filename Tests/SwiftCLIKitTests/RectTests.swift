@@ -10,11 +10,10 @@ import Foundation
 struct RectTests {
 
     @Test("Intersection of overlapping rects is correct; non-overlapping returns nil")
-    func intersection() {
+    func intersection() throws {
         let a = Rect(x: 0, y: 0, width: 10, height: 10)
         let b = Rect(x: 5, y: 5, width: 10, height: 10)
-        let overlap = a.intersection(b)
-        #expect(overlap != nil)
+        let overlap = try #require(a.intersection(b))
         #expect(overlap == Rect(x: 5, y: 5, width: 5, height: 5))
 
         let c = Rect(x: 20, y: 20, width: 5, height: 5)

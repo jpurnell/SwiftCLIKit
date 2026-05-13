@@ -57,7 +57,7 @@ public struct TextField: Sendable {
     }
 
     /// The current text value.
-    public var text: String { editor.text }
+    public var text: String { editor.displayText }
 
     /// Processes a key press and returns the result.
     /// - Parameter key: The key event to handle.

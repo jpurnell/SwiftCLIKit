@@ -71,9 +71,9 @@ public struct Component<Model: Sendable, Message: Sendable, ParentMessage: Senda
     /// Maps a child command to a parent command by wrapping messages through ``toParent``.
     private func mapCmd(_ cmd: Cmd<Message>) -> Cmd<ParentMessage> {
         switch cmd.kind {
-        case .none:
+        case .empty:
             return .none
-        case .quit:
+        case .terminate:
             return .quit
         case .task(let work):
             return .task { [toParent] in toParent(await work()) }

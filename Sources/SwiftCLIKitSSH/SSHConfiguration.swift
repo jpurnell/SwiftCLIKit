@@ -30,9 +30,9 @@ public struct SSHConfiguration: Sendable {
         case none
         /// Password-based authentication with a validation closure.
         /// The closure receives `(username, password)` and returns whether the credentials are valid.
-        case password(@Sendable (String, String) -> Bool)
+        case password(@Sendable (String, String) -> Bool) // LIVE: public API
         /// Accept any public key (similar to Charm's Wish library).
-        case publicKey
+        case publicKey // LIVE: public API
     }
 
     /// Creates an SSH configuration with the given parameters.

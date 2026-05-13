@@ -65,6 +65,7 @@ public struct Toast: Sendable, Identifiable, Equatable {
         now >= createdAt + duration
     }
 
+    /// Returns whether two toasts are equal by comparing their identity, message, severity, duration, and creation time.
     public static func == (lhs: Toast, rhs: Toast) -> Bool {
         lhs.id == rhs.id
             && lhs.message == rhs.message

@@ -86,10 +86,10 @@ public struct TerminalSettings: Codable, Sendable {
     /// - Returns: The decoded settings, or defaults if the file is missing or corrupt.
     public static func load(appName: String) -> TerminalSettings {
         let path = configFilePath(appName: appName)
-        guard let data = try? Data(contentsOf: path) else {
+        guard let data = try? Data(contentsOf: path) else { // silent: fallback to defaults when config file missing or unreadable
             return TerminalSettings()
         }
-        guard let settings = try? JSONDecoder().decode(TerminalSettings.self, from: data) else {
+        guard let settings = try? JSONDecoder().decode(TerminalSettings.self, from: data) else { // silent: fallback to defaults on parse failure
             return TerminalSettings()
         }
         return settings

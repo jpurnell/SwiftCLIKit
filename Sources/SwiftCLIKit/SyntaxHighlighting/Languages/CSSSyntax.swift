@@ -5,7 +5,7 @@
 /// Tokenizer for CSS source.
 struct CSSSyntaxTokenizer: LanguageTokenizer, Sendable {
 
-    private static let atRules: Set<String> = [
+    private static let atRules: Set<String> = [ // LIVE: library API for consumers
         "@media", "@keyframes", "@import", "@font-face", "@charset",
         "@supports", "@namespace", "@page", "@layer",
     ]

@@ -123,6 +123,7 @@ public struct CalendarView: Sendable {
 // MARK: - AccessibleWidget
 
 extension CalendarView: AccessibleWidget {
+    /// An accessibility label describing the calendar view, including the displayed month, year, and selected date.
     public var accessibilityLabel: AccessibilityLabel {
         let monthNames = [
             "January", "February", "March", "April", "May", "June",

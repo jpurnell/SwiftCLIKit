@@ -47,7 +47,7 @@ struct SnapshotTestingTests {
         var buf2 = CellBuffer(width: 5, height: 1)
         buf2.writeText("BBBB", at: (x: 0, y: 0))
         let diff = SnapshotTesting.compare(buf2, goldenFile: path)
-        #expect(diff != nil)
+        #expect(diff?.isEmpty == false, "Mismatched buffers should produce a non-empty diff")
     }
 
     @Test("renderPlainText of empty buffer is blank")

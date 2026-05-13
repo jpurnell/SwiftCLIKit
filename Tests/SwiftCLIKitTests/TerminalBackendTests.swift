@@ -12,7 +12,9 @@ struct TerminalBackendTests {
     @Test("RealBackend creates without crash")
     func realBackendCreates() {
         let backend = RealBackend()
-        _ = backend
+        // Verify backend is usable after creation
+        let size = backend.terminalSize()
+        #expect(size.columns >= 0)
     }
 
     @Test("RealBackend terminalSize returns non-zero dimensions")

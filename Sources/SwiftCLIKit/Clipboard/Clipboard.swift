@@ -3,6 +3,7 @@
 // Created by Justin Purnell on 2026-04-10.
 
 import Foundation
+import os
 
 /// Terminal clipboard access via OSC 52 escape sequences.
 ///
@@ -14,10 +15,14 @@ import Foundation
 /// let sequence = Clipboard.writeSequence("text")
 /// ```
 public enum Clipboard {
+    private static let logger = Logger(subsystem: "com.swiftclikit", category: "Clipboard")
+
     /// Writes text to the clipboard by printing the OSC 52 sequence.
     /// - Parameter text: The text to copy to the clipboard.
     public static func write(_ text: String) {
-        print(writeSequence(text), terminator: "")
+        let sequence = writeSequence(text)
+        logger.debug("Writing OSC 52 clipboard sequence")
+        FileHandle.standardOutput.write(Data(sequence.utf8))
     }
 
     /// Returns the OSC 52 escape sequence to write text to the clipboard.

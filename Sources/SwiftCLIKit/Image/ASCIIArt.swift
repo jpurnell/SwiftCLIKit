@@ -53,10 +53,13 @@ public struct ASCIIArt: Sendable {
             let bottomY = topY + 1
 
             for x in 0..<targetWidth {
-                let top = scaled.pixel(x: x, y: topY)
+                guard let top = scaled.pixel(x: x, y: topY) else {
+                    row.append(Cell(character: " "))
+                    continue
+                }
                 let bottom: (r: UInt8, g: UInt8, b: UInt8, a: UInt8)
-                if bottomY < scaled.height {
-                    bottom = scaled.pixel(x: x, y: bottomY)
+                if let b = scaled.pixel(x: x, y: bottomY) {
+                    bottom = b
                 } else {
                     bottom = (r: 0, g: 0, b: 0, a: 0)
                 }
@@ -108,10 +111,10 @@ public struct ASCIIArt: Sendable {
         targetHeight: Int
     ) -> PixelData {
         guard targetWidth > 0, targetHeight > 0 else {
-            return PixelData(bytes: [], width: 0, height: 0)
+            return .empty
         }
         guard pixels.width > 0, pixels.height > 0 else {
-            return PixelData(bytes: [], width: 0, height: 0)
+            return .empty
         }
 
         var result = [UInt8](repeating: 0, count: targetWidth * targetHeight * 4)
@@ -129,7 +132,7 @@ public struct ASCIIArt: Sendable {
             }
         }
 
-        return PixelData(bytes: result, width: targetWidth, height: targetHeight)
+        return PixelData(bytes: result, width: targetWidth, height: targetHeight) ?? .empty
     }
 
     /// Convert an RGB color to the nearest ANSI 256-color index.

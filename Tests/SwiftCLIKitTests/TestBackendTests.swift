@@ -43,7 +43,7 @@ struct TestBackendTests {
             #expect(key == .character("a"))
         } else {
             // Expected failure: inject is a no-op stub, so no event received
-            #expect(received != nil, "inject() should yield the event into the stream")
+            #expect(Bool(false), "inject() should yield a .key(.character(\"a\")) event into the stream")
         }
     }
 

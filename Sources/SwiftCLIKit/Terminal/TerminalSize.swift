@@ -91,8 +91,8 @@ public struct TerminalSize: Sendable, Equatable {
 
 /// An opaque token whose lifetime controls a SIGWINCH resize subscription.
 /// Deallocation automatically deregisters the callback.
+// Justification: identifier only written once during registration; dealloc removal is lock-protected
 public final class ResizeToken: @unchecked Sendable {
-    // Justification: signal handler registration is thread-safe; dealloc removes it
     fileprivate var identifier: ObjectIdentifier?
 
     deinit {

@@ -10,28 +10,27 @@ import Foundation
 struct SyntaxHighlighterTests {
 
     @Test("Swift keyword 'let' detected as .keyword token")
-    func swiftKeyword() {
+    func swiftKeyword() throws {
         let hl = SyntaxHighlighter(language: .swift)
         let spans = hl.highlight("let x = 5")
-        let keywordSpan = spans.first(where: { $0.tokenType == .keyword })
-        #expect(keywordSpan != nil)
-        #expect(keywordSpan?.text == "let")
+        let keywordSpan = try #require(spans.first(where: { $0.tokenType == .keyword }))
+        #expect(keywordSpan.text == "let")
     }
 
     @Test("Swift line comment detected as .comment token")
-    func swiftComment() {
+    func swiftComment() throws {
         let hl = SyntaxHighlighter(language: .swift)
         let spans = hl.highlight("// comment")
-        let commentSpan = spans.first(where: { $0.tokenType == .comment })
-        #expect(commentSpan != nil)
+        let commentSpan = try #require(spans.first(where: { $0.tokenType == .comment }))
+        #expect(commentSpan.text.contains("comment"))
     }
 
     @Test("Swift string literal detected as .string token")
-    func swiftString() {
+    func swiftString() throws {
         let hl = SyntaxHighlighter(language: .swift)
         let spans = hl.highlight("let s = \"hello\"")
-        let stringSpan = spans.first(where: { $0.tokenType == .string })
-        #expect(stringSpan != nil)
+        let stringSpan = try #require(spans.first(where: { $0.tokenType == .string }))
+        #expect(stringSpan.text.contains("hello"))
     }
 
     @Test("JSON key and number detected")
@@ -46,11 +45,11 @@ struct SyntaxHighlighterTests {
     }
 
     @Test("Markdown heading detected as keyword")
-    func markdownHeading() {
+    func markdownHeading() throws {
         let hl = SyntaxHighlighter(language: .markdown)
         let spans = hl.highlight("# Title")
-        let headingSpan = spans.first(where: { $0.tokenType == .keyword })
-        #expect(headingSpan != nil)
+        let headingSpan = try #require(spans.first(where: { $0.tokenType == .keyword }))
+        #expect(headingSpan.text.contains("#"))
     }
 
     @Test("generic language returns at least strings and numbers")
