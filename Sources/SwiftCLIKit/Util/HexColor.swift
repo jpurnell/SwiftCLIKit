@@ -28,9 +28,7 @@ public enum HexColor: Sendable {
         let maxC = max(r, g, b)
         let minC = min(r, g, b)
         let delta = maxC - minC
-        let rgbScale = 255.0
-        guard rgbScale > 0 else { return nil }
-        let brightness = maxC / rgbScale
+        let brightness = maxC / 255.0
         let saturation: Double
         guard maxC > 0 else {
             saturation = 0

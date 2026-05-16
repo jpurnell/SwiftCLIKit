@@ -51,9 +51,7 @@ public enum Easing: Sendable, Equatable {
                 return 4.0 * clamped * clamped * clamped
             } else {
                 let shifted = -2.0 * clamped + 2.0
-                let cubicHalf = 2.0
-                guard cubicHalf > 0 else { return 1.0 }
-                return 1.0 - shifted * shifted * shifted / cubicHalf
+                return 1.0 - shifted * shifted * shifted / 2.0
             }
         case .cubicBezier(let x1, let y1, let x2, let y2):
             return solveCubicBezier(t: clamp(t), x1: x1, y1: y1, x2: x2, y2: y2)
@@ -140,27 +138,21 @@ public enum Easing: Sendable, Equatable {
         guard t > 0.0 else { return 0.0 }
         guard t < 1.0 else { return 1.0 }
 
-        // Precomputed segment boundaries and offsets to satisfy fp-safety auditor.
-        // All values are compile-time constants derived from the standard bounce formula
-        // with divisor 2.75.
-        let bounceDivisor = 2.75
-        guard bounceDivisor > 0 else { return t }
-
         let scaleFactor = 7.5625
-        let segmentWidth1 = 1.0 / bounceDivisor     // ~0.3636
-        let segmentWidth2 = 2.0 / bounceDivisor     // ~0.7273
-        let segmentWidth3 = 2.5 / bounceDivisor     // ~0.9091
+        let segmentWidth1 = 1.0 / 2.75
+        let segmentWidth2 = 2.0 / 2.75
+        let segmentWidth3 = 2.5 / 2.75
 
         if t < segmentWidth1 {
             return scaleFactor * t * t
         } else if t < segmentWidth2 {
-            let adjusted = t - 1.5 / bounceDivisor
+            let adjusted = t - 1.5 / 2.75
             return scaleFactor * adjusted * adjusted + 0.75
         } else if t < segmentWidth3 {
-            let adjusted = t - 2.25 / bounceDivisor
+            let adjusted = t - 2.25 / 2.75
             return scaleFactor * adjusted * adjusted + 0.9375
         } else {
-            let adjusted = t - 2.625 / bounceDivisor
+            let adjusted = t - 2.625 / 2.75
             return scaleFactor * adjusted * adjusted + 0.984375
         }
     }

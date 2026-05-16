@@ -26,8 +26,8 @@ public struct ASCIIArt: Sendable {
     /// background color for bottom pixel, displayed as an upper half-block.
     /// - Parameters:
     ///   - pixels: Source RGBA pixel data.
-    ///   - width: Target width in terminal cells.
-    ///   - height: Target height in terminal cells (each cell = 2 pixel rows).
+    ///   - targetWidth: Target width in terminal cells.
+    ///   - targetHeight: Target height in terminal cells (each cell = 2 pixel rows).
     /// - Returns: 2D array of ``Cell`` values (height rows, width columns).
     public static func render(
         pixels: PixelData,

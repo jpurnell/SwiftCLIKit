@@ -47,8 +47,8 @@ public struct SessionPlayer<Model: Sendable, Message: Codable & Sendable>: Senda
     /// Lines that cannot be decoded are skipped.
     ///
     /// - Returns: An array of model states, one per message entry.
-    /// - Throws: ``SessionPlayerError/fileNotFound`` if the file does not exist,
-    ///   or ``SessionPlayerError/readError`` if the file cannot be read.
+    /// - Throws: ``SessionPlayerError/fileNotFound(_:)`` if the file does not exist,
+    ///   or ``SessionPlayerError/readError(_:)`` if the file cannot be read.
     public func play() throws -> [Model] {
         let data = try readFileData()
         let lines = splitLines(data)

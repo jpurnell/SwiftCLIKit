@@ -53,7 +53,6 @@ public enum ANSIStringMetrics: Sendable {
         var result = ""
         var currentWidth = 0
         var inEscape = false
-        var hadANSI = false
         var hasOpenANSI = false
 
         let characters = Array(s)
@@ -67,7 +66,6 @@ public enum ANSIStringMetrics: Sendable {
                 // Look ahead for '['
                 if i + 1 < characters.count, characters[i + 1] == "[" {
                     inEscape = true
-                    hadANSI = true
                     hasOpenANSI = true
                     result.append(ch)
                     i += 1

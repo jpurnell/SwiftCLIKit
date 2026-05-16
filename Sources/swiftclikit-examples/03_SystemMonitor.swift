@@ -348,9 +348,7 @@ enum SystemMonitor {
     private static func memoryBytes(for percent: Double) -> String {
         // Simulate 16 GB total RAM
         let totalGB = 16.0
-        let percentScale = 100.0
-        guard percentScale > 0 else { return "0 B" }
-        let usedGB = totalGB * (percent / percentScale)
+        let usedGB = totalGB * (percent / 100.0)
         let usedBytes = Int64(usedGB * 1_073_741_824)
         return Formatting.bytes(usedBytes)
     }

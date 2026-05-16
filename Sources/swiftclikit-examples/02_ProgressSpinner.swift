@@ -45,7 +45,7 @@ private let spinnerFrames: [String] = [
 /// Tier 2 of the SwiftCLIKit tutorial system.
 ///
 /// This tier teaches frame-based rendering — updating the terminal in-place
-/// instead of scrolling output. You will learn about ``ScreenBuffer``,
+/// instead of scrolling output. You will learn about `ScreenBuffer`,
 /// cursor control, unbuffered I/O, and the clear-render-sleep loop that
 /// drives every real-time terminal UI.
 enum ProgressSpinner {
@@ -128,7 +128,7 @@ enum ProgressSpinner {
 
     /// Section 2 — Progress Bar Animation
     ///
-    /// Animates an ``InlineGauge`` from 0 to 100%, showing how ``ScreenBuffer``
+    /// Animates an `InlineGauge` from 0 to 100%, showing how `ScreenBuffer`
     /// composes a gauge and its label into a single atomic frame write.
     private static func section2_progressBar() {
         printSectionHeader(
@@ -188,7 +188,7 @@ enum ProgressSpinner {
     /// Section 3 — Multi-Line Dashboard
     ///
     /// Builds a 4-line live display that updates every 100 ms. This is where
-    /// ``ScreenBuffer.frame`` shines: it prefixes the content with clear-screen
+    /// `ScreenBuffer.frame` shines: it prefixes the content with clear-screen
     /// + home-cursor so the entire display refreshes without scrolling.
     private static func section3_multiLineDashboard() {
         printSectionHeader(

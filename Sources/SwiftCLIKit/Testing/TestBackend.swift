@@ -87,7 +87,7 @@ public final class TestBackend: TerminalBackend, @unchecked Sendable {
     /// The async stream of events for consumption by the app runtime.
     public var eventStream: AsyncStream<Event> { _eventStream }
 
-    /// All buffers that have been submitted via ``submitRender(_:)``.
+    /// All buffers that have been submitted via `submitRender(_:)`.
     public var renderHistory: [CellBuffer] {
         lock.lock()
         defer { lock.unlock() }

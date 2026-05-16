@@ -556,26 +556,21 @@ enum HelloTerminal {
         let g: Double
         let b: Double
 
-        // Segment boundaries for the three-phase fire gradient
-        let seg1 = 0.33
-        let seg2 = 0.34
-        guard seg1 > 0, seg2 > 0 else { return (0, 0, 0) }
-
         if t < 0.33 {
             // Black to red
-            let local = t / seg1
+            let local = t / 0.33
             r = local
             g = 0
             b = 0
         } else if t < 0.66 {
             // Red to yellow
-            let local = (t - 0.33) / seg1
+            let local = (t - 0.33) / 0.33
             r = 1
             g = local
             b = 0
         } else {
             // Yellow to white
-            let local = (t - 0.66) / seg2
+            let local = (t - 0.66) / 0.34
             r = 1
             g = 1
             b = local

@@ -5,7 +5,7 @@
 import Foundation
 import NIOCore
 import NIOPosix
-import NIOSSH
+@preconcurrency import NIOSSH
 import os
 import SwiftCLIKit
 
@@ -50,7 +50,7 @@ public struct SSHServer: Sendable {
     ///   - host: The address to bind to. Defaults to "0.0.0.0".
     ///   - port: The port to listen on. Defaults to 2222.
     ///   - hostKeySource: How to obtain the host key. Defaults to `.generateEphemeral`.
-    ///   - configuration: Server configuration. Defaults to ``SSHConfiguration()``.
+    ///   - configuration: Server configuration. Defaults to ``SSHConfiguration``.
     public init(
         host: String = "0.0.0.0",
         port: Int = 2222,

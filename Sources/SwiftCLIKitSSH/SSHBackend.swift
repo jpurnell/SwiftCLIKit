@@ -7,7 +7,7 @@ import SwiftCLIKit
 import NIOCore
 import NIOSSH
 
-/// A ``TerminalBackend`` that operates over an SSH channel.
+/// A `TerminalBackend` that operates over an SSH channel.
 ///
 /// Reads input bytes fed by the NIO channel handler and writes output
 /// through a provided closure. The SSH channel is inherently in raw mode,
@@ -87,7 +87,7 @@ public final class SSHBackend: TerminalBackend, @unchecked Sendable {
     ///
     /// - Note: Currently returns `nil` as a placeholder. Full async key reading
     ///   integration is planned for a future release.
-    /// - Returns: The next ``Key``, or `nil`.
+    /// - Returns: The next `Key`, or `nil`.
     public func readKey() -> Key? {
         // Placeholder: full implementation needs async byte reading
         // to bridge NIO's event-driven delivery with the synchronous readKey() API.
