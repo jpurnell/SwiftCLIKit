@@ -17,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Path traversal hardening in SnapshotTesting, SessionPlayer, SessionRecorder
 - Floating-point safety in PerfTracker FPS calculation
 
+## [1.0.1] - 2025-05-15
+
+### Fixed
+- DocC symbol references for SessionPlayerError, ASCIIArt, and cross-module refs
+- Floating-point safety false positives (inline non-zero literal divisors)
+- Doc-lint scope limited to SwiftCLIKit target
+
 ## [1.14.0] - 2025-05-12
 
 ### Added

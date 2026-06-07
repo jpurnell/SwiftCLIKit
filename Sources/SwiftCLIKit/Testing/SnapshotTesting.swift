@@ -154,6 +154,7 @@ public enum SnapshotTesting {
     /// The last snapshot failure message, if any. Useful for test inspection.
     private static let _lastSnapshotFailureStorage = Mutex<String?>(nil)
 
+    /// The most recent snapshot assertion failure message, or `nil` if all passed.
     public static var _lastSnapshotFailure: String? {
         get { _lastSnapshotFailureStorage.withLock { $0 } }
         set { _lastSnapshotFailureStorage.withLock { $0 = newValue } }

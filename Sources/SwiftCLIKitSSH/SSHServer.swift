@@ -81,17 +81,20 @@ public struct SSHServer: Sendable {
 
         let bootstrap = ServerBootstrap(group: group)
             .childChannelInitializer { channel in
-                let handler = NIOSSHHandler(
-                    role: .server(
-                        .init(
-                            hostKeys: [hostKey],
-                            userAuthDelegate: authDelegate
+                channel.eventLoop.makeCompletedFuture {
+                    try channel.pipeline.syncOperations.addHandler(
+                        NIOSSHHandler(
+                            role: .server(
+                                .init(
+                                    hostKeys: [hostKey],
+                                    userAuthDelegate: authDelegate
+                                )
+                            ),
+                            allocator: channel.allocator,
+                            inboundChildChannelInitializer: nil
                         )
-                    ),
-                    allocator: channel.allocator,
-                    inboundChildChannelInitializer: nil
-                )
-                return channel.pipeline.addHandler(handler)
+                    )
+                }
             }
             .serverChannelOption(.socketOption(.so_reuseaddr), value: 1)
 

@@ -32,6 +32,10 @@ private struct RawTerminalState: Sendable {
 }
 #endif
 
+/// A low-level terminal handle that enables raw (non-canonical) mode on a file descriptor.
+///
+/// Use `RawTerminal` to disable line buffering and echo so your application receives
+/// each keystroke immediately. The original terminal settings are restored on deinitialization.
 public final class RawTerminal: Sendable {
     private let fd: Int32
     private let ownsDescriptor: Bool

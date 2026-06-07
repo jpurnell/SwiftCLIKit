@@ -37,7 +37,6 @@ final class SessionRecorderTests: XCTestCase {
     override func setUp() {
         super.setUp()
         tempDir = NSTemporaryDirectory() + "SwiftCLIKitTests_\(UUID().uuidString)/"
-        FileManager.default.createFile(atPath: tempDir, contents: nil)
         try? FileManager.default.createDirectory(atPath: tempDir, withIntermediateDirectories: true)
     }
 

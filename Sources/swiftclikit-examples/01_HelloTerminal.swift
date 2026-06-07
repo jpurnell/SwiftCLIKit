@@ -291,10 +291,8 @@ enum HelloTerminal {
         // Red -> Yellow -> Green -> Cyan -> Blue -> Magenta -> Red (rainbow)
         print("  " + ANSICodes.bold + "Rainbow:" + ANSICodes.reset)
         var rainbow = "  "
-        let rainbowSteps = Double(gradientWidth)
-        guard rainbowSteps > 0 else { return }
         for i in 0..<gradientWidth {
-            let hue = Double(i) / rainbowSteps
+            let hue = Double(i) / 56.0
             let (r, g, b) = hueToRGB(hue)
             rainbow += ANSICodes.bgRGB(r, g, b) + " " + ANSICodes.reset
         }
@@ -304,10 +302,8 @@ enum HelloTerminal {
         // Fire gradient: black -> red -> orange -> yellow -> white
         print("  " + ANSICodes.bold + "Fire:" + ANSICodes.reset)
         var fire = "  "
-        let fireSteps = Double(gradientWidth - 1)
-        guard fireSteps > 0 else { return }
         for i in 0..<gradientWidth {
-            let t = Double(i) / fireSteps
+            let t = Double(i) / 55.0
             let (r, g, b) = fireGradient(t)
             fire += ANSICodes.bgRGB(r, g, b) + " " + ANSICodes.reset
         }
@@ -317,10 +313,8 @@ enum HelloTerminal {
         // Ocean gradient: deep blue -> teal -> seafoam
         print("  " + ANSICodes.bold + "Ocean:" + ANSICodes.reset)
         var ocean = "  "
-        let oceanSteps = Double(gradientWidth - 1)
-        guard oceanSteps > 0 else { return }
         for i in 0..<gradientWidth {
-            let t = Double(i) / oceanSteps
+            let t = Double(i) / 55.0
             let r = UInt8(clamping: Int(10 + t * 60))
             let g = UInt8(clamping: Int(20 + t * 200))
             let b = UInt8(clamping: Int(80 + t * 175))
