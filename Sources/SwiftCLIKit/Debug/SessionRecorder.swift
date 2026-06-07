@@ -16,8 +16,7 @@ import Foundation
 /// recorder.record(message: .increment, timestamp: 0.5)
 /// try recorder.close()
 /// ```
-// Justification: FileHandle is reference-type and thread-safe for sequential appends; class only used from a single recording context
-public final class SessionRecorder<Message: Codable & Sendable>: @unchecked Sendable {
+public final class SessionRecorder<Message: Codable & Sendable>: Sendable {
     private let fileHandle: FileHandle
     private let encoder: JSONEncoder
     private let outputPath: String

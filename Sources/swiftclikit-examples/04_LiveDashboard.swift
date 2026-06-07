@@ -5,6 +5,7 @@
 
 import SwiftCLIKit
 import Foundation
+import Synchronization
 
 #if canImport(Darwin)
 import Darwin
@@ -12,8 +13,7 @@ import Darwin
 import Glibc
 #endif
 
-// Justification: signal handlers cannot capture context; single-writer (signal handler) / single-reader (main thread) pattern is safe
-nonisolated(unsafe) private var shouldExit = false
+private let shouldExitFlag = Atomic<Bool>(false)
 
 /// Tier 4 is a walkthrough of production TUI architecture patterns, demonstrated
 /// through a generic JSON file-watcher dashboard. It simulates a pipeline that
@@ -107,7 +107,7 @@ enum LiveDashboard {
         runDashboard(statusPath: statusPath)
 
         // Clean up
-        shouldExit = true
+        shouldExitFlag.store(true, ordering: .releasing)
         // Give the updater thread a moment to notice the flag
         Thread.sleep(forTimeInterval: 0.1)
         cleanupStatusFile(at: statusPath)
@@ -128,7 +128,7 @@ enum LiveDashboard {
                 guard let ptr = buffer.baseAddress else { return }
                 _ = write(1, ptr, buffer.count)
             }
-            shouldExit = true
+            shouldExitFlag.store(true, ordering: .releasing)
         }
     }
 
@@ -213,7 +213,7 @@ enum LiveDashboard {
         let epochsTotal = 10
 
         for tick in 0..<Config.maxUpdates {
-            guard !shouldExit else { return }
+            guard !shouldExitFlag.load(ordering: .acquiring) else { return }
 
             elapsed = tick + 1
 
@@ -274,7 +274,7 @@ enum LiveDashboard {
         var pollCount = 0
         let maxPolls = Int(Double(Config.maxUpdates) * Config.updateInterval / Config.pollInterval) + 20
 
-        while !shouldExit, pollCount < maxPolls {
+        while !shouldExitFlag.load(ordering: .acquiring), pollCount < maxPolls {
             let size = TerminalSize.current()
             let width = max(size.columns, Config.minimumWidth)
 

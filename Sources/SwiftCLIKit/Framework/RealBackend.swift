@@ -3,6 +3,7 @@
 // Created by Justin Purnell on 2026-04-10.
 
 import Foundation
+import Synchronization
 
 #if canImport(Darwin)
 import Darwin
@@ -24,16 +25,16 @@ import Glibc
 /// backend.leaveAlternateScreen()
 /// backend.disableRawMode()
 /// ```
-// Justification: terminal state managed in init/deinit lifecycle; file descriptors are OS-level thread-safe
-public final class RealBackend: TerminalBackend, @unchecked Sendable {
+public final class RealBackend: TerminalBackend, Sendable {
     private let terminal: RawTerminal
     private let reader: KeyReader
-    private var altScreen: AlternateScreen?
+    private let altScreenState: Mutex<AlternateScreen?>
 
     /// Creates a real backend that reads from stdin and writes to stdout.
     public init() {
         self.terminal = RawTerminal()
         self.reader = KeyReader(terminal: terminal)
+        self.altScreenState = Mutex(nil)
     }
 
     /// Enters raw mode.
@@ -74,12 +75,12 @@ public final class RealBackend: TerminalBackend, @unchecked Sendable {
 
     /// Switches to the alternate screen buffer.
     public func enterAlternateScreen() {
-        altScreen = AlternateScreen()
+        altScreenState.withLock { $0 = AlternateScreen() }
     }
 
     /// Restores the primary screen buffer.
     public func leaveAlternateScreen() {
-        altScreen = nil  // deinit restores
+        altScreenState.withLock { $0 = nil }  // deinit restores
     }
 
     /// Enables SGR extended mouse tracking.

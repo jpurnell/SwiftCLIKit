@@ -3,6 +3,7 @@
 // Created by Justin Purnell on 2026-04-10.
 
 import Foundation
+import Synchronization
 
 #if canImport(Darwin)
 import Darwin
@@ -24,13 +25,18 @@ import Glibc
 /// let terminal = RawTerminal(fileDescriptor: pipe.fileHandleForReading.fileDescriptor)
 /// let byte = terminal.readByte()  // Optional(65)
 /// ```
-// Justification: original termios stored at init, restored at deinit only; fd is immutable after init
-public final class RawTerminal: @unchecked Sendable {
+#if canImport(Darwin) || canImport(Glibc)
+private struct RawTerminalState: Sendable {
+    var originalTermios: termios?
+    var rawModeActive: Bool = false
+}
+#endif
+
+public final class RawTerminal: Sendable {
     private let fd: Int32
     private let ownsDescriptor: Bool
     #if canImport(Darwin) || canImport(Glibc)
-    private var originalTermios: termios?
-    private var rawModeActive: Bool = false
+    private let state: Mutex<RawTerminalState>
     #endif
 
     /// Creates a raw terminal wrapping the given file descriptor.
@@ -48,24 +54,26 @@ public final class RawTerminal: @unchecked Sendable {
             self.ownsDescriptor = false
         }
         #if canImport(Darwin) || canImport(Glibc)
+        var initial = RawTerminalState()
         var original = termios()
-        guard tcgetattr(fd, &original) == 0 else {
-            // Not a terminal (e.g. pipe) — raw mode unavailable but readByte still works
-            return
+        if tcgetattr(fd, &original) == 0 {
+            initial.originalTermios = original
+            var raw = original
+            cfmakeraw(&raw)
+            if tcsetattr(fd, TCSAFLUSH, &raw) == 0 {
+                initial.rawModeActive = true
+            }
         }
-        self.originalTermios = original
-        var raw = original
-        cfmakeraw(&raw)
-        if tcsetattr(fd, TCSAFLUSH, &raw) == 0 {
-            rawModeActive = true
-        }
+        self.state = Mutex(initial)
         #endif
     }
 
     deinit {
         #if canImport(Darwin) || canImport(Glibc)
-        if var original = originalTermios {
-            tcsetattr(fd, TCSAFLUSH, &original)
+        state.withLock { s in
+            if var original = s.originalTermios {
+                tcsetattr(fd, TCSAFLUSH, &original)
+            }
         }
         #endif
         if ownsDescriptor {
@@ -85,7 +93,7 @@ public final class RawTerminal: @unchecked Sendable {
     /// Whether raw terminal mode was successfully activated.
     public var isRawMode: Bool {
         #if canImport(Darwin) || canImport(Glibc)
-        return rawModeActive
+        return state.withLock { $0.rawModeActive }
         #else
         return false
         #endif

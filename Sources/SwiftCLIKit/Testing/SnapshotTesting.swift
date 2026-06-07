@@ -3,6 +3,7 @@
 // Created by Justin Purnell on 2026-04-10.
 
 import Foundation
+import Synchronization
 
 /// Utilities for snapshot-based testing of ``CellBuffer`` contents.
 ///
@@ -151,8 +152,12 @@ public enum SnapshotTesting {
     }
 
     /// The last snapshot failure message, if any. Useful for test inspection.
-    // Justification: testing-only diagnostic property, not accessed concurrently in practice
-    nonisolated(unsafe) public static var _lastSnapshotFailure: String?
+    private static let _lastSnapshotFailureStorage = Mutex<String?>(nil)
+
+    public static var _lastSnapshotFailure: String? {
+        get { _lastSnapshotFailureStorage.withLock { $0 } }
+        set { _lastSnapshotFailureStorage.withLock { $0 = newValue } }
+    }
 
     // MARK: - Private Helpers
 

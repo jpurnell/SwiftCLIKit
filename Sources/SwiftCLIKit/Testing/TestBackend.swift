@@ -3,6 +3,7 @@
 // Created by Justin Purnell on 2026-04-10.
 
 import Foundation
+import Synchronization
 
 /// An in-memory terminal backend for headless testing.
 ///
@@ -13,18 +14,20 @@ import Foundation
 /// let backend = TestBackend(width: 80, height: 24)
 /// await backend.inject(.key(.character("a")))
 /// ```
-// Justification: NSLock protects all mutable state (buffer, history, event queue) across threads
-public final class TestBackend: TerminalBackend, @unchecked Sendable {
-    private let lock = NSLock()
-    private var buffer: CellBuffer
-    private var history: [CellBuffer] = []
-    private var eventContinuation: AsyncStream<Event>.Continuation?
-    private var _eventStream: AsyncStream<Event>
-    private var writtenOutput: [String] = []
-    private var _isRawMode: Bool = false
-    private var _isAlternateScreen: Bool = false
-    private var _isMouseEnabled: Bool = false
-    private var _isCursorHidden: Bool = false
+public final class TestBackend: TerminalBackend, Sendable {
+    private struct State: Sendable {
+        var buffer: CellBuffer
+        var history: [CellBuffer] = []
+        var eventContinuation: AsyncStream<Event>.Continuation?
+        var writtenOutput: [String] = []
+        var isRawMode: Bool = false
+        var isAlternateScreen: Bool = false
+        var isMouseEnabled: Bool = false
+        var isCursorHidden: Bool = false
+    }
+
+    private let state: Mutex<State>
+    private let _eventStream: AsyncStream<Event>
 
     /// The width of the virtual terminal in columns.
     public let width: Int
@@ -38,23 +41,23 @@ public final class TestBackend: TerminalBackend, @unchecked Sendable {
     public init(width: Int, height: Int) {
         self.width = width
         self.height = height
-        self.buffer = CellBuffer(width: width, height: height)
         var cont: AsyncStream<Event>.Continuation?
         self._eventStream = AsyncStream { cont = $0 }
-        self.eventContinuation = cont
+        self.state = Mutex(State(
+            buffer: CellBuffer(width: width, height: height),
+            eventContinuation: cont
+        ))
     }
 
     /// The current rendered buffer.
     public var currentBuffer: CellBuffer {
-        lock.lock()
-        defer { lock.unlock() }
-        return buffer
+        state.withLock { $0.buffer }
     }
 
     /// Injects a single event into the event stream.
     /// - Parameter event: The event to inject.
     public func inject(_ event: Event) async {
-        let cont = getContinuation()
+        let cont = state.withLock { $0.eventContinuation }
         cont?.yield(event)
     }
 
@@ -64,19 +67,12 @@ public final class TestBackend: TerminalBackend, @unchecked Sendable {
     ///   - delay: The delay between each event (default: zero).
     public func injectSequence(_ events: [Event], delay: Duration = .zero) async {
         for event in events {
-            let cont = getContinuation()
+            let cont = state.withLock { $0.eventContinuation }
             cont?.yield(event)
             if delay > .zero {
                 try? await Task.sleep(for: delay) // silent: best-effort delay between injected events; cancellation is acceptable
             }
         }
-    }
-
-    /// Thread-safe access to the event continuation, callable from async contexts.
-    private nonisolated func getContinuation() -> AsyncStream<Event>.Continuation? {
-        lock.lock()
-        defer { lock.unlock() }
-        return eventContinuation
     }
 
     /// Waits for the next render cycle to complete.
@@ -89,41 +85,33 @@ public final class TestBackend: TerminalBackend, @unchecked Sendable {
 
     /// All buffers that have been submitted via `submitRender(_:)`.
     public var renderHistory: [CellBuffer] {
-        lock.lock()
-        defer { lock.unlock() }
-        return history
+        state.withLock { $0.history }
     }
 
     /// Clears the render history.
     public func clearHistory() {
-        lock.lock()
-        defer { lock.unlock() }
-        history.removeAll()
+        state.withLock { $0.history.removeAll() }
     }
 
     /// Called by the App runtime to submit a rendered buffer.
     /// - Parameter buf: The buffer to record.
     internal func submitRender(_ buf: CellBuffer) { // LIVE: library API for consumers
-        lock.lock()
-        buffer = buf
-        history.append(buf)
-        lock.unlock()
+        state.withLock { state in
+            state.buffer = buf
+            state.history.append(buf)
+        }
     }
 
     // MARK: - TerminalBackend Conformance
 
     /// Enters raw mode (no-op for test backend).
     public func enableRawMode() throws {
-        lock.lock()
-        defer { lock.unlock() }
-        _isRawMode = true
+        state.withLock { $0.isRawMode = true }
     }
 
     /// Restores original terminal mode (no-op for test backend).
     public func disableRawMode() {
-        lock.lock()
-        defer { lock.unlock() }
-        _isRawMode = false
+        state.withLock { $0.isRawMode = false }
     }
 
     /// Returns `nil` immediately (use ``inject(_:)`` for event-driven testing).
@@ -137,87 +125,63 @@ public final class TestBackend: TerminalBackend, @unchecked Sendable {
     /// Records the string for later assertion via ``allWrittenOutput``.
     /// - Parameter string: The text that would be written to a real terminal.
     public func write(_ string: String) {
-        lock.lock()
-        defer { lock.unlock() }
-        writtenOutput.append(string)
+        state.withLock { $0.writtenOutput.append(string) }
     }
 
     /// Marks the alternate screen as active (no-op for test backend).
     public func enterAlternateScreen() {
-        lock.lock()
-        defer { lock.unlock() }
-        _isAlternateScreen = true
+        state.withLock { $0.isAlternateScreen = true }
     }
 
     /// Marks the alternate screen as inactive (no-op for test backend).
     public func leaveAlternateScreen() {
-        lock.lock()
-        defer { lock.unlock() }
-        _isAlternateScreen = false
+        state.withLock { $0.isAlternateScreen = false }
     }
 
     /// Marks mouse tracking as enabled (no-op for test backend).
     public func enableMouse() {
-        lock.lock()
-        defer { lock.unlock() }
-        _isMouseEnabled = true
+        state.withLock { $0.isMouseEnabled = true }
     }
 
     /// Marks mouse tracking as disabled (no-op for test backend).
     public func disableMouse() {
-        lock.lock()
-        defer { lock.unlock() }
-        _isMouseEnabled = false
+        state.withLock { $0.isMouseEnabled = false }
     }
 
     /// Marks the cursor as hidden (no-op for test backend).
     public func hideCursor() {
-        lock.lock()
-        defer { lock.unlock() }
-        _isCursorHidden = true
+        state.withLock { $0.isCursorHidden = true }
     }
 
     /// Marks the cursor as visible (no-op for test backend).
     public func showCursor() {
-        lock.lock()
-        defer { lock.unlock() }
-        _isCursorHidden = false
+        state.withLock { $0.isCursorHidden = false }
     }
 
     // MARK: - Test Inspection
 
     /// All strings that have been written through the ``write(_:)`` method.
     public var allWrittenOutput: [String] {
-        lock.lock()
-        defer { lock.unlock() }
-        return writtenOutput
+        state.withLock { $0.writtenOutput }
     }
 
     /// Whether raw mode is currently active.
     public var isRawMode: Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        return _isRawMode
+        state.withLock { $0.isRawMode }
     }
 
     /// Whether the alternate screen buffer is active.
     public var isAlternateScreen: Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        return _isAlternateScreen
+        state.withLock { $0.isAlternateScreen }
     }
 
     /// Whether mouse tracking is enabled.
     public var isMouseEnabled: Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        return _isMouseEnabled
+        state.withLock { $0.isMouseEnabled }
     }
 
     /// Whether the cursor is hidden.
     public var isCursorHidden: Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        return _isCursorHidden
+        state.withLock { $0.isCursorHidden }
     }
 }

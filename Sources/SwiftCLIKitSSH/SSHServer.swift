@@ -112,8 +112,7 @@ public struct SSHServer: Sendable {
 ///
 /// Intended for development use only. Production deployments should use
 /// ``SSHConfiguration/AuthMode/password(_:)`` or ``SSHConfiguration/AuthMode/publicKey``.
-// Justification: stateless delegate with no mutable fields; all properties are computed
-private final class AcceptAllAuth: NIOSSHServerUserAuthenticationDelegate, @unchecked Sendable {
+private final class AcceptAllAuth: NIOSSHServerUserAuthenticationDelegate, Sendable {
     /// Reports all authentication methods as supported.
     var supportedAuthenticationMethods: NIOSSHAvailableUserAuthenticationMethods { .all }
 

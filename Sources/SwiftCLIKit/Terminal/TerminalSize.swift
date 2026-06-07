@@ -3,6 +3,7 @@
 // Created by Justin Purnell on 2026-04-10.
 
 import Foundation
+import Synchronization
 
 #if canImport(Darwin)
 import Darwin
@@ -11,22 +12,23 @@ import Glibc
 #endif
 
 #if canImport(Darwin) || canImport(Glibc)
-private let resizeLock = NSLock()
-// Justification: access is serialized through resizeLock (NSLock)
-nonisolated(unsafe) private var resizeCallbacks: [ObjectIdentifier: @Sendable (TerminalSize) -> Void] = [:]
-// Justification: access is serialized through resizeLock (NSLock)
-nonisolated(unsafe) private var signalHandlerInstalled = false
+private struct ResizeState: Sendable {
+    var callbacks: [ObjectIdentifier: @Sendable (TerminalSize) -> Void] = [:]
+    var signalHandlerInstalled: Bool = false
+}
+
+private let resizeState = Mutex(ResizeState())
 
 private func installSignalHandler() {
-    guard !signalHandlerInstalled else { return }
-    signalHandlerInstalled = true
-    signal(SIGWINCH) { _ in
-        let size = TerminalSize.current()
-        resizeLock.lock()
-        let callbacks = resizeCallbacks
-        resizeLock.unlock()
-        for (_, callback) in callbacks {
-            callback(size)
+    resizeState.withLock { state in
+        guard !state.signalHandlerInstalled else { return }
+        state.signalHandlerInstalled = true
+        signal(SIGWINCH) { _ in
+            let size = TerminalSize.current()
+            let callbacks = resizeState.withLock { $0.callbacks }
+            for (_, callback) in callbacks {
+                callback(size)
+            }
         }
     }
 }
@@ -79,28 +81,27 @@ public struct TerminalSize: Sendable, Equatable {
         let token = ResizeToken()
         let identifier = ObjectIdentifier(token)
         #if canImport(Darwin) || canImport(Glibc)
-        resizeLock.lock()
-        resizeCallbacks[identifier] = onChange
+        resizeState.withLock { state in
+            state.callbacks[identifier] = onChange
+        }
         installSignalHandler()
-        resizeLock.unlock()
         #endif
-        token.identifier = identifier
+        token._identifier.withLock { $0 = identifier }
         return token
     }
 }
 
 /// An opaque token whose lifetime controls a SIGWINCH resize subscription.
 /// Deallocation automatically deregisters the callback.
-// Justification: identifier only written once during registration; dealloc removal is lock-protected
-public final class ResizeToken: @unchecked Sendable {
-    fileprivate var identifier: ObjectIdentifier?
+public final class ResizeToken: Sendable {
+    fileprivate let _identifier = Mutex<ObjectIdentifier?>(nil)
 
     deinit {
         #if canImport(Darwin) || canImport(Glibc)
-        guard let identifier = identifier else { return }
-        resizeLock.lock()
-        resizeCallbacks.removeValue(forKey: identifier)
-        resizeLock.unlock()
+        guard let identifier = _identifier.withLock({ $0 }) else { return }
+        resizeState.withLock { state in
+            _ = state.callbacks.removeValue(forKey: identifier)
+        }
         #endif
     }
 }

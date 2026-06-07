@@ -4,23 +4,18 @@
 
 import Testing
 import Foundation
+import Synchronization
 @testable import SwiftCLIKit
 
-// Justification: Test-only capture buffer used synchronously within each test; no concurrent mutation.
-private final class CaptureBuffer: @unchecked Sendable {
-    private let lock = NSLock()
-    private var storage: [String] = []
+private final class CaptureBuffer: Sendable {
+    private let state: Mutex<[String]> = Mutex([])
 
     func append(_ value: String) {
-        lock.lock()
-        defer { lock.unlock() }
-        storage.append(value)
+        state.withLock { $0.append(value) }
     }
 
     var values: [String] {
-        lock.lock()
-        defer { lock.unlock() }
-        return storage
+        state.withLock { $0 }
     }
 }
 

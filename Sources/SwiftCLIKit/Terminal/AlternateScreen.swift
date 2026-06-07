@@ -3,6 +3,7 @@
 // Created by Justin Purnell on 2026-04-10.
 
 import Foundation
+import Synchronization
 
 #if canImport(Darwin)
 import Darwin
@@ -25,19 +26,22 @@ import Glibc
 ///     // When `screen` goes out of scope, the original content reappears.
 /// }
 /// ```
-// Justification: fd is immutable after init; enter/leave only called from main thread at app lifecycle boundaries
-public final class AlternateScreen: @unchecked Sendable {
+public final class AlternateScreen: Sendable {
     private let fd: Int32
+    private let _isActive: Mutex<Bool>
 
     /// Whether the alternate screen is currently active.
-    public private(set) var isActive: Bool = false
+    public var isActive: Bool {
+        _isActive.withLock { $0 }
+    }
 
     /// Creates an alternate screen on the given file descriptor.
     /// - Parameter fileDescriptor: The POSIX file descriptor to write to (default: STDOUT).
     public init(fileDescriptor: Int32 = 1) {
         self.fd = fileDescriptor
+        self._isActive = Mutex(false)
         writeEscape("\u{001B}[?1049h")
-        isActive = true
+        _isActive.withLock { $0 = true }
     }
 
     deinit {

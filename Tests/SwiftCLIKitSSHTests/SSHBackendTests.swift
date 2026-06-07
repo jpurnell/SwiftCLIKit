@@ -4,25 +4,20 @@
 
 import Testing
 import Foundation
+import Synchronization
 @testable import SwiftCLIKitSSH
 import SwiftCLIKit
 
 /// Thread-safe accumulator for captured output strings.
-private final class CapturedOutput: @unchecked Sendable {
-    // Justification: NSLock serializes all access to the values array
-    private let lock = NSLock()
-    private var _values: [String] = []
+private final class CapturedOutput: Sendable {
+    private let state: Mutex<[String]> = Mutex([])
 
     func append(_ string: String) {
-        lock.lock()
-        defer { lock.unlock() }
-        _values.append(string)
+        state.withLock { $0.append(string) }
     }
 
     var values: [String] {
-        lock.lock()
-        defer { lock.unlock() }
-        return _values
+        state.withLock { $0 }
     }
 }
 

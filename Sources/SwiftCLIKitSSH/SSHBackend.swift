@@ -6,6 +6,7 @@ import Foundation
 import SwiftCLIKit
 import NIOCore
 import NIOSSH
+import Synchronization
 
 /// A `TerminalBackend` that operates over an SSH channel.
 ///
@@ -23,13 +24,11 @@ import NIOSSH
 ///
 /// - Note: The ``readKey()`` method currently returns `nil` as a placeholder.
 ///   Full integration requires an async key reader, planned for a future release.
-// Justification: NSLock protects mutable size; NIO channel access serialized through event loop
-public final class SSHBackend: TerminalBackend, @unchecked Sendable {
+public final class SSHBackend: TerminalBackend, Sendable {
     private let inputBuffer: AsyncStream<UInt8>
     private let inputContinuation: AsyncStream<UInt8>.Continuation
     private let outputHandler: @Sendable (String) -> Void
-    private let lock = NSLock()
-    private var size: TerminalSize
+    private let sizeState: Mutex<TerminalSize>
 
     /// Errors that can occur during SSH backend initialization.
     public enum Error: Swift.Error {
@@ -47,7 +46,7 @@ public final class SSHBackend: TerminalBackend, @unchecked Sendable {
         initialSize: TerminalSize = TerminalSize(columns: 80, rows: 24),
         outputHandler: @escaping @Sendable (String) -> Void
     ) throws {
-        self.size = initialSize
+        self.sizeState = Mutex(initialSize)
         self.outputHandler = outputHandler
         var cont: AsyncStream<UInt8>.Continuation?
         self.inputBuffer = AsyncStream { cont = $0 }
@@ -70,9 +69,7 @@ public final class SSHBackend: TerminalBackend, @unchecked Sendable {
     /// Updates the terminal size, typically in response to a window-change request.
     /// - Parameter newSize: The new terminal dimensions.
     public func updateSize(_ newSize: TerminalSize) {
-        lock.lock()
-        defer { lock.unlock() }
-        size = newSize
+        sizeState.withLock { $0 = newSize }
     }
 
     // MARK: - TerminalBackend Conformance
@@ -96,9 +93,7 @@ public final class SSHBackend: TerminalBackend, @unchecked Sendable {
 
     /// Returns the current terminal dimensions as reported by the SSH client.
     public func terminalSize() -> TerminalSize {
-        lock.lock()
-        defer { lock.unlock() }
-        return size
+        sizeState.withLock { $0 }
     }
 
     /// Writes a string to the SSH channel via the output handler.
